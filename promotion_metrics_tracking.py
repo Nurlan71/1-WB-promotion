@@ -34,7 +34,7 @@ def load_config_from_file(config_file="promotion_config.txt") -> Dict[str, Optio
     if not config.get('API_KEY_PROMOTION'):
        logger.warning("API_KEY_PROMOTION отсутствует в promotion_config.txt для metrics_tracking.")
     if not config.get('API_KEY_ANALYTICS'):
-       logger.warning("API_KEY_ANALYTICS отсутствует в promotion_config.txt для metrics_tracking (может быть необходим).")
+       logger.info("API_KEY_ANALYTICS отсутствует в promotion_config.txt для metrics_tracking (статистика продаж будет недоступна).")
     return config
 
 def track_campaign_metrics(api_client: WildberriesAPIClient, campaign_info: Dict[str, Any]) -> bool:
@@ -51,7 +51,7 @@ def track_campaign_metrics(api_client: WildberriesAPIClient, campaign_info: Dict
 
     if stats_list is None: 
         logger.warning(f"Статистика для кампании {campaign_id} не получена (API клиент вернул None).")
-        print(f"Не удалось получить статистику для кампании ID: {campaign_id} (ошибка API).")
+        print(f"Не удалось получить статистику для кампании ID: {campaign_id} (ошибка API или все ретраи исчерпаны).")
         return False
     
     analyzed = analyze_campaign_stats(stats_list) 
@@ -129,13 +129,7 @@ def main():
             try:
                 if not track_campaign_metrics(api_client, campaign_info):
                      all_stats_fetched_successfully = False 
-
-                # --- УБРАНА ИЛИ УМЕНЬШЕНА ПАУЗА ---
-                # if i < len(active_campaigns) - 1:
-                #     pause_duration = 1 # Пример небольшой паузы, если нужна
-                #     logger.info(f"Дополнительная пауза на {pause_duration} сек перед следующей кампанией...")
-                #     time.sleep(pause_duration)
-
+                # Длинные паузы здесь убраны, RateLimiter управляет задержками перед API запросами
             except Exception as e:
                 all_stats_fetched_successfully = False
                 campaign_id_log = campaign_info.get('id', 'N/A')
@@ -147,8 +141,7 @@ def main():
 
     if api_key_analytics:
         try:
-            # logger.info("Пауза перед запросом общих продаж...") # RateLimiter управляет этим
-            # time.sleep(0.5) # Убрана или уменьшена пауза
+            # Явная пауза перед общими продажами убрана, RateLimiter должен справиться
             track_sales_metrics(api_client)
         except Exception as e:
             logger.error(f"Ошибка при отслеживании метрик продаж: {e}", exc_info=True)

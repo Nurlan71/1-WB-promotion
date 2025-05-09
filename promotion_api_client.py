@@ -1,35 +1,32 @@
 import logging
 import requests
 import json
-from datetime import datetime, timedelta # Добавлено для get_sales_stats
-import time # Добавлено для get_active_campaign_list
+from datetime import datetime, timedelta
+import time
 from typing import Dict, List, Any, Optional, Union
-from wildberries_rate_limiter import WildberriesRateLimiter # Убедитесь, что этот файл есть
+from wildberries_rate_limiter import WildberriesRateLimiter
 
-# Конфигурация логгера уже должна быть в promotion_main.py,
-# но если этот модуль используется отдельно, можно оставить базовую конфигурацию здесь
-# или лучше получать logger = logging.getLogger(__name__) и настраивать в main
 logger = logging.getLogger(__name__)
 
 class WildberriesAPIClient:
-    def __init__(self, api_key: str, api_key_analytics: Optional[str] = None): # api_key_promotion -> api_key
-        self.api_key = api_key # Был api_key_promotion
+    def __init__(self, api_key: str, api_key_analytics: Optional[str] = None):
+        self.api_key = api_key
         self.api_key_analytics = api_key_analytics
         
-        if not self.api_key: # Проверка основного ключа
+        if not self.api_key:
             logger.warning("Основной API_KEY (для продвижения) не предоставлен.")
+        # Аналитический ключ может быть опциональным, поэтому только warning если его нет
         if not self.api_key_analytics:
-            logger.warning("API_KEY_ANALYTICS не предоставлен (опционально).")
+            logger.info("API_KEY_ANALYTICS не предоставлен (опционально, для статистики продаж).")
 
-        # Заголовки теперь формируются в _make_request_impl
         self.base_url_promotion = "https://advert-api.wildberries.ru"
         self.base_url_analytics = "https://seller-analytics-api.wildberries.ru"
         self.timeout = 30
 
         self.rate_limiter = WildberriesRateLimiter(
-            initial_delay=1.0, # Можно начать с 1 секунды
-            max_delay=120.0,
-            backoff_factor=1.5, # Уменьшил фактор, чтобы не так агрессивно увеличивать задержку
+            initial_delay=5.0,  # Увеличена начальная задержка
+            max_delay=180.0,
+            backoff_factor=2.0, # Увеличен фактор для более быстрого роста задержки
             jitter=True,
             max_retries=5 
         )
@@ -43,25 +40,28 @@ class WildberriesAPIClient:
             
         if 'Authorization' not in headers:
             current_api_key = None
-            if 'analytics' in url or 'seller-analytics-api' in url:
+            # Определяем, какой ключ использовать, в зависимости от URL
+            if 'seller-analytics-api.wildberries.ru' in url:
                 if self.api_key_analytics:
                     current_api_key = self.api_key_analytics
                 else:
-                    logger.error(f"API_KEY_ANALYTICS не предоставлен для запроса к {url}, но он требуется.")
-                    # Можно возбудить исключение или вернуть фиктивный ответ с ошибкой
-                    # raise ValueError(f"Missing API_KEY_ANALYTICS for {url}")
-                    # Для примера просто логируем и позволяем запросу провалиться дальше (если WB позволит без ключа)
-            else: # Предполагаем, что это запрос к API продвижения
+                    logger.error(f"API_KEY_ANALYTICS не предоставлен для запроса к {url}, но он требуется для этого домена.")
+                    # Можно возбудить исключение, чтобы RateLimiter это поймал и не делал запрос
+                    # raise ValueError(f"Отсутствует API_KEY_ANALYTICS для запроса к {url}")
+            elif 'advert-api.wildberries.ru' in url: # Предполагаем, что это запрос к API продвижения
                 if self.api_key:
                     current_api_key = self.api_key
                 else:
-                    logger.error(f"Основной API_KEY (продвижения) не предоставлен для запроса к {url}, но он требуется.")
-                    # raise ValueError(f"Missing main API_KEY for {url}")
-            
+                    logger.error(f"Основной API_KEY (продвижения) не предоставлен для запроса к {url}, но он требуется для этого домена.")
+                    # raise ValueError(f"Отсутствует основной API_KEY для запроса к {url}")
+            else: # Неизвестный домен
+                 logger.warning(f"Не удалось определить подходящий API ключ для URL: {url}")
+
+
             if current_api_key:
                  headers['Authorization'] = current_api_key
-            elif not ('Authorization' in headers and headers['Authorization']): # Если ключ не был установлен и не был передан
-                 logger.error(f"Отсутствует Authorization header и подходящий API ключ для запроса к {url}")
+            elif not ('Authorization' in headers and headers['Authorization']):
+                 logger.error(f"Отсутствует Authorization header и подходящий API ключ не был найден для запроса к {url}")
                  # Можно поднять исключение, чтобы rate limiter это поймал
                  # raise ValueError(f"Authorization header missing for {url}")
 
@@ -74,22 +74,30 @@ class WildberriesAPIClient:
             try:
                 body_to_log = json.dumps(data)
             except TypeError:
-                body_to_log = str(data) # на случай если данные не сериализуемы в JSON для лога
+                body_to_log = str(data)
 
         full_url_log = url
         if params:
-            param_string = '&'.join([f"{k}={v}" for k, v in params.items()])
-            full_url_log = f"{url}?{param_string}"
+            param_list = []
+            for k,v_list_item in params.items():
+                if isinstance(v_list_item, list):
+                    for v_item in v_list_item:
+                        param_list.append(f"{k}={v_item}")
+                else:
+                    param_list.append(f"{k}={v_list_item}")
+            if param_list:
+                param_string = '&'.join(param_list)
+                full_url_log = f"{url}?{param_string}"
         
-        logger.info(f"Request: {method} {full_url_log} | Headers: {headers} | Body: {body_to_log}") # Добавил лог заголовков
+        logger.info(f"Request: {method} {full_url_log} | Headers: {headers} | Body: {body_to_log}")
         
         try:
             if method.upper() == 'GET':
                 response = requests.get(url, headers=headers, params=params, timeout=self.timeout)
             elif method.upper() == 'POST':
-                if isinstance(data, (dict, list)):
+                if isinstance(data, (dict, list)): # Проверяем, что data это dict или list перед передачей в json=
                     response = requests.post(url, headers=headers, json=data, params=params, timeout=self.timeout)
-                else:
+                else: # Если data это строка (например, уже сериализованный JSON), используем data=
                     response = requests.post(url, headers=headers, data=data, params=params, timeout=self.timeout)
             else:
                 logger.error(f"Unsupported HTTP method: {method}")
@@ -104,23 +112,18 @@ class WildberriesAPIClient:
             return response
             
         except requests.exceptions.RequestException as e:
-            # Логирование уже будет в RateLimiter или здесь, если ошибка не связана с HTTP статусом
             logger.error(f"Request exception for {url}: {str(e)}", exc_info=True)
-            raise # Передаем исключение дальше, чтобы rate_limiter мог его обработать
-
-    # ПЕРЕНЕСЕННЫЕ И АДАПТИРОВАННЫЕ МЕТОДЫ:
+            raise
 
     def get_active_campaign_list(self) -> List[Dict[str, Any]]:
-        """Получает список активных кампаний (статус 9) типов 8 и 9."""
         count_url = f"{self.base_url_promotion}/adv/v1/promotion/count"
         logger.info(f"Запрос общего количества и ID кампаний с {count_url}")
         
-        # Для _make_request передаем только метод и URL, заголовки он подставит сам
         try:
             counts_response_obj = self._make_request('GET', count_url)
-            counts_response = counts_response_obj.json() if counts_response_obj.content else {}
+            counts_response = counts_response_obj.json() if counts_response_obj and counts_response_obj.content else {}
         except Exception as e:
-            logger.error(f"Ошибка при запросе /adv/v1/promotion/count: {e}")
+            logger.error(f"Ошибка при запросе /adv/v1/promotion/count: {e}", exc_info=True)
             return []
 
         if not counts_response or not isinstance(counts_response, dict) or 'adverts' not in counts_response:
@@ -136,7 +139,7 @@ class WildberriesAPIClient:
                         for item in advert_list_items:
                             if isinstance(item, dict) and 'advertId' in item:
                                 all_campaign_ids_type_8_9.append(item['advertId']) 
-                            elif isinstance(item, int): # На случай если формат снова изменится
+                            elif isinstance(item, int):
                                 all_campaign_ids_type_8_9.append(item)
         
         if not all_campaign_ids_type_8_9:
@@ -147,36 +150,42 @@ class WildberriesAPIClient:
 
         active_filtered_campaigns: List[Dict[str, Any]] = []
         all_campaigns_details_url = f"{self.base_url_promotion}/adv/v1/promotion/adverts"
-        batch_size = 50 # WB рекомендует не более 50 ID в запросе /adverts
+        batch_size = 50
         
         for i in range(0, len(all_campaign_ids_type_8_9), batch_size):
             id_batch: List[int] = all_campaign_ids_type_8_9[i:i+batch_size]
             
             logger.info(f"Запрос деталей для пакета ID кампаний (POST): {id_batch}")
+            detailed_batch_response = None # Инициализируем
             try:
                 detailed_batch_response_obj = self._make_request('POST', all_campaigns_details_url, data=id_batch)
-                detailed_batch_response = detailed_batch_response_obj.json() if detailed_batch_response_obj.content else []
+                if detailed_batch_response_obj and detailed_batch_response_obj.content:
+                    if detailed_batch_response_obj.status_code == 204: # No content
+                        detailed_batch_response = []
+                        logger.info(f"Получен статус 204 (No Content) для пакета ID: {id_batch}")
+                    else:
+                        detailed_batch_response = detailed_batch_response_obj.json()
+                else:
+                     detailed_batch_response = [] if detailed_batch_response_obj and detailed_batch_response_obj.status_code == 204 else None
+
+
             except Exception as e:
-                logger.error(f"Ошибка при POST запросе деталей кампаний {id_batch}: {e}")
-                detailed_batch_response = None # или continue, чтобы пропустить этот батч
+                logger.error(f"Ошибка при POST запросе деталей кампаний {id_batch}: {e}", exc_info=True)
+                detailed_batch_response = None
 
             if detailed_batch_response and isinstance(detailed_batch_response, list):
                 for camp_data in detailed_batch_response:
                     if isinstance(camp_data, dict) and camp_data.get('status') == 9 and camp_data.get('type') in [8, 9]:
                         subject_id = None
                         nm_ids: List[int] = []
-                        # Логика извлечения subject_id и nm_ids из params остается прежней
                         if camp_data.get('params') and isinstance(camp_data['params'], list) and len(camp_data['params']) > 0:
                             param_item = camp_data['params'][0]
                             if isinstance(param_item, dict):
                                 subject_id = param_item.get('subjectId') or param_item.get('setId') or param_item.get('menuId')
                                 if camp_data.get('type') == 8: 
                                     nm_ids = param_item.get('nms', []) 
-                                elif camp_data.get('type') == 9: # Аукцион
-                                     # Для типа 9 (Аукцион), subjectId может быть напрямую в params[0].id или params[0].subjectId
+                                elif camp_data.get('type') == 9: 
                                     subject_id = param_item.get('id') or param_item.get('subjectId')
-
-
                         active_filtered_campaigns.append({
                             'id': camp_data.get('advertId'),
                             'name': camp_data.get('name'),
@@ -187,91 +196,74 @@ class WildberriesAPIClient:
                         })
             elif detailed_batch_response and isinstance(detailed_batch_response, dict) and "error" in detailed_batch_response:
                  logger.error(f"Ошибка API при запросе деталей кампаний {id_batch}: {detailed_batch_response.get('errorText', detailed_batch_response)}")
-            else:
-                 if isinstance(detailed_batch_response, (list, dict)) and not detailed_batch_response:
-                      logger.warning(f"Получен пустой ответ (list/dict) при запросе деталей кампаний {id_batch}.")
-                 elif detailed_batch_response is not None: # Проверяем, что не None после неудачного try-except
+            elif detailed_batch_response is None:
+                logger.warning(f"Не получен ответ (None) при запросе деталей кампаний {id_batch} (возможно, из-за ошибки на предыдущем шаге).")
+            else: # catches empty list specifically if not caught by 204 or other specific conditions
+                 if isinstance(detailed_batch_response, (list, dict)) and not detailed_batch_response and detailed_batch_response_obj.status_code != 204 :
+                      logger.warning(f"Получен пустой ответ (list/dict, не 204) при запросе деталей кампаний {id_batch}.")
+                 elif detailed_batch_response_obj.status_code != 204: # Не логировать как warning если это ожидаемый 204
                       logger.warning(f"Неожиданный ответ или нет данных при запросе деталей кампаний {id_batch}: {detailed_batch_response}")
             
-            # Rate Limiter сам управляет задержками, явный time.sleep(1.1) здесь может быть избыточен
-            # Но если для /adverts есть специфичные очень жесткие лимиты, не покрываемые общим rate limiter'ом, можно оставить небольшую паузу
-            # time.sleep(0.5) # Например, уменьшенная пауза
-
         logger.info(f"Найдено активных кампаний (статус 9, типы 8 или 9) после детального запроса и клиентской фильтрации: {len(active_filtered_campaigns)}")
         if not active_filtered_campaigns:
              print("Не найдено активных кампаний (АРК или Аукцион) для обработки после детального запроса.")
         return active_filtered_campaigns
 
-    def get_campaign_stats(self, campaign_ids: List[int]) -> Optional[List[Dict[str, Any]]]: # Изменено для соответствия старому интерфейсу и логам
-        """Получает статистику для указанных кампаний."""
+    def get_campaign_stats(self, campaign_ids: List[int]) -> Optional[List[Dict[str, Any]]]:
         url = f"{self.base_url_promotion}/adv/v2/fullstats"
-        # API /adv/v2/fullstats ожидает список ID в таком формате: [{"id": id1}, {"id": id2}]
-        # Однако, если вы всегда передаете список из одного ID, как в example_usage и логах,
-        # то [ {"id": campaign_ids[0]} ] будет правильным, если campaign_ids это [один_id]
-        # Если же campaign_ids это просто один int, то [{"id": campaign_ids}]
-        # Судя по вашим логам, вы передавали payload: [{"id": 24921656}], что значит список из одного элемента.
-        # Чтобы сохранить совместимость с тем, как его вызывают другие модули (передавая один ID),
-        # а также с example_usage (который передает список ID), сделаем так:
-        if not isinstance(campaign_ids, list): # Если передали одиночный ID
-            payload = [{"id": campaign_ids}]
-        else: # Если передали список ID
-            payload = [{"id": c_id} for c_id in campaign_ids] # Это для случая, если АПИ реально принимает несколько ID сразу
+        if not isinstance(campaign_ids, list):
+             # Ожидаем список, но если пришел один int, оборачиваем его
+             logger.warning(f"get_campaign_stats ожидал список ID, но получил {type(campaign_ids)}. Оборачиваю в список.")
+             payload = [{"id": campaign_ids}]
+        elif not campaign_ids : # Пустой список ID
+            logger.warning("get_campaign_stats получил пустой список campaign_ids.")
+            return []
+        else:
+            payload = [{"id": c_id} for c_id in campaign_ids]
 
         logger.info(f"Запрос статистики кампании(й) ID(s): {campaign_ids} с payload: {json.dumps(payload)}")
         try:
             response_obj = self._make_request('POST', url, data=payload)
-            # /adv/v2/fullstats возвращает список словарей
             return response_obj.json() if response_obj and response_obj.content else None
         except Exception as e:
             logger.error(f"Не удалось получить статистику кампаний {campaign_ids}: {str(e)}", exc_info=True)
             return None
 
-
     def get_sales_stats(self) -> Optional[Dict[str, Any]]:
-        """Получает статистику продаж за заданный период."""
         url = f"{self.base_url_analytics}/api/v2/nm-report/detail"
-        # Формат даты из ваших рабочих логов
         date_format = '%Y-%m-%d %H:%M:%S'
         
-        # Начальная дата - можно сделать настраиваемой или более динамической
-        # Пример: 30 дней назад от текущего момента
-        days_back = 30 
-        date_from_obj = datetime.now() - timedelta(days=days_back)
-        date_from_obj = date_from_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+        now_utc = datetime.utcnow() # Используем UTC для расчетов, чтобы избежать путаницы с часовыми поясами сервера
+        
+        # Конечная дата: WB API для nm-report/detail часто требует, чтобы 'end' был не позднее X часов назад.
+        # Из лога: "invalid value 2025-05-07 15:06:00 +0300 MSK, select a date no later than 2025-05-07 12:06:25"
+        # Это примерно 3 часа разницы. Возьмем с запасом 4 часа.
+        # Сервер WB, вероятно, работает по Московскому времени (UTC+3).
+        # Если сейчас 18:00 UTC, то в Москве 21:00. Лимит будет 21:00 - 4ч = 17:00 МСК.
+        # Нам нужно сформировать date_to_str в формате 'YYYY-MM-DD HH:MM:SS' (предположительно, локальное для МСК).
+        
+        # Рассчитываем время в МСК (UTC+3) и отнимаем необходимый лаг
+        # moscow_time_now = now_utc + timedelta(hours=3)
+        # end_date_limit_msk = moscow_time_now - timedelta(hours=4) # 4 часа назад от текущего времени МСК
+        
+        # Упрощенный подход: берем начало текущего дня UTC минус 1 час (для гарантии, что данные уже есть)
+        # Конечная дата должна быть в прошлом.
+        # API ожидает время как бы "локальное" для сервера, вероятно МСК.
+        # Но передавать будем строки без явного указания TZ, как в успешных логах.
 
-        # Конечная дата - "вчера", т.к. данные за сегодня могут быть неполными или API может их не отдавать сразу.
-        # Wildberries API часто требует задержку в несколько часов для актуальных данных.
-        # API /nm-report/detail часто имеет ограничение "select a date no later than YYYY-MM-DD HH:MM:SS"
-        # Эта задержка (8 часов из ваших старых логов) может быть актуальна.
-        now_local = datetime.now()
-        # API ожидает время в Europe/Moscow, но сам расчет date_to_safe лучше делать от UTC или локального с пониманием смещения
-        # Пусть date_to_safe будет конец предыдущего дня по Москве.
-        # Если сейчас 9 мая 10:00 МСК, то date_to_safe будет 8 мая 23:59:59 МСК.
-        # Wildberries API для nm-report/detail может требовать, чтобы конечная дата была не позднее чем на X часов назад от текущего момента.
-        # Судя по ошибке из лога: "select a date no later than 2025-05-07 12:06:25" (когда запрос был в 15:06),
-        # это примерно 3 часа назад. Сделаем с запасом - 4 часа.
-        date_to_limit = now_local - timedelta(hours=4) 
-        date_to_obj = (now_local - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=0) # Конец вчерашнего дня
+        # Попробуем сделать как в логе, где был успешный запрос на продажи:
+        # "period": {"begin": "2025-04-16 00:00:00", "end": "2025-05-07 12:03:22"}
+        # Конечная дата была примерно на 8 часов раньше момента запроса (20:03)
 
-        # Убедимся, что date_to_obj не позже date_to_limit
-        date_to_obj = min(date_to_obj, date_to_limit.replace(hour=23, minute=59, second=59, microsecond=0))
+        end_date_obj_utc = now_utc - timedelta(hours=8) # 8 часов назад от текущего UTC
+        start_date_obj_utc = end_date_obj_utc - timedelta(days=30) # за последние 30 дней до этой точки
 
-
-        if date_to_obj < date_from_obj:
-             logger.warning(f"Расчетная конечная дата ({date_to_obj.strftime(date_format)}) для статистики продаж раньше начальной ({date_from_obj.strftime(date_format)}). Используем только начальную дату.")
-             date_to_obj = date_from_obj.replace(hour=23, minute=59, second=59) # Как минимум один день статистики
-             if date_to_obj > date_to_limit: # Проверка на ограничение API
-                 date_to_obj = date_to_limit.replace(hour=23, minute=59, second=59)
-             if date_to_obj < date_from_obj:
-                 logger.error("Невозможно сформировать корректный период для статистики продаж после корректировок.")
-                 return None
-
-        date_from_str = date_from_obj.strftime(date_format)
-        date_to_str = date_to_obj.strftime(date_format)
+        date_from_str = start_date_obj_utc.strftime(date_format)
+        date_to_str = end_date_obj_utc.strftime(date_format)
 
         payload = {
             "brandNames": [], "objectIDs": [], "tagIDs": [], "nmIDs": [],
-            "timezone": "Europe/Moscow", 
+            "timezone": "Europe/Moscow", # Указываем часовой пояс для интерпретации периода на стороне WB
             "period": {"begin": date_from_str, "end": date_to_str},
             "orderBy": {"field": "ordersSumRub", "mode": "desc"},
             "page": 1
@@ -279,53 +271,24 @@ class WildberriesAPIClient:
         logger.info(f"Запрос статистики продаж с payload: {json.dumps(payload)}")
         try:
             response_obj = self._make_request('POST', url, data=payload)
-            # Обработка ответа, аналогичная вашему старому коду
             if response_obj is None or not response_obj.content:
-                return None
+                 logger.warning(f"Получен пустой ответ от API статистики продаж ({url}).")
+                 return None
             response_json = response_obj.json()
             if isinstance(response_json, dict) and response_json.get("error"):
                 error_detail = response_json.get('errorText') or response_json.get('errors') or str(response_json)
-                logger.error(f"Ошибка от API статистики продаж: {error_detail}")
+                logger.error(f"Ошибка от API статистики продаж ({url}): {error_detail}. Payload: {json.dumps(payload)}")
                 return None
             return response_json
         except Exception as e:
-            logger.error(f"Ошибка при запросе статистики продаж: {str(e)}", exc_info=True)
+            logger.error(f"Ошибка при запросе статистики продаж ({url}): {str(e)}", exc_info=True)
             return None
 
     def get_current_bid_api(self, campaign_id: int, campaign_type: int, campaign_info: Dict[str, Any]) -> Optional[float]:
         logger.warning(f"[ЗАГЛУШКА] get_current_bid_api для campaign_id={campaign_id}, type={campaign_type}. Возвращаем 50.00 руб.")
-        # Здесь в будущем будет реальный запрос к API для получения текущей ставки
-        # Пример:
-        # url = f"{self.base_url_promotion}/adv/v0/cpm?advert_id={campaign_id}" # Это старый эндпоинт, найти актуальный
-        # try:
-        #     response_obj = self._make_request('GET', url)
-        #     data = response_obj.json()
-        #     # Логика извлечения ставки из data
-        #     return float(bid_value_from_data)
-        # except Exception as e:
-        #     logger.error(f"Ошибка получения текущей ставки для {campaign_id}: {e}")
-        #     return None
         return 50.0
 
     def update_campaign_bid_api(self, campaign_id: int, campaign_type: int, new_bid_kop: int, params_for_update: Dict[str, Any]) -> bool:
         logger.warning(f"[ЗАГЛУШКА] update_campaign_bid_api для campaign_id={campaign_id}, type={campaign_type}, new_bid_kop={new_bid_kop}, params: {params_for_update}. Обновление НЕ выполнено.")
         print(f"INFO: [ЗАГЛУШКА] Ставка для кампании {campaign_id} была бы изменена на {new_bid_kop / 100:.2f} руб.")
-        # Реальный API вызов будет здесь. Например:
-        # url = f"{self.base_url_promotion}/adv/v0/cpm"
-        # payload = {
-        #     "advertId": campaign_id,
-        #     "type": campaign_type, # Уточнить, нужен ли тип кампании для обновления ставки
-        #     "cpm": new_bid_kop,
-        #     "param": params_for_update.get('subject_id') # Это пример, нужно смотреть документацию
-        # }
-        # if campaign_type == 8 and params_for_update.get('nm_ids'): # Для АРК может понадобиться nmId
-        #    payload["nmId"] = params_for_update['nm_ids'][0] if params_for_update['nm_ids'] else None # Пример
-        #
-        # try:
-        #     response_obj = self._make_request('POST', url, data=payload)
-        #     # Проверить успешность по status_code или содержимому ответа
-        #     return response_obj.status_code == 200 
-        # except Exception as e:
-        #     logger.error(f"Ошибка обновления ставки для {campaign_id}: {e}")
-        #     return False
         return True
