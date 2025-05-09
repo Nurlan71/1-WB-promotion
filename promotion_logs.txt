@@ -1,0 +1,440 @@
+2025-05-09 18:28:01,875 - INFO - promotion_api_client.py:98 - Response from URL: https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail | Status: 200
+2025-05-09 18:28:01,877 - INFO - promotion_metrics_tracking.py:93 - [2025-05-09 18:28:01] Продажи (общие) - Кол-во заказов: 1985, Выручка: 3673327.00 руб., Средний чек: 1850.54 руб.
+2025-05-09 18:28:01,880 - INFO - promotion_automation.py:31 - Конфигурация для automation загружена: {'WB_CABINET_ID': '626913'}
+2025-05-09 18:28:01,880 - INFO - promotion_automation.py:153 - Automator: Получение списка активных кампаний для автоматизации...
+2025-05-09 18:28:01,880 - INFO - promotion_api_client.py:116 - Запрос общего количества и ID кампаний с https://advert-api.wildberries.ru/adv/v1/promotion/count
+2025-05-09 18:28:01,880 - INFO - promotion_api_client.py:84 - Request: GET https://advert-api.wildberries.ru/adv/v1/promotion/count | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A'} | Body: No body
+2025-05-09 18:28:02,134 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v1/promotion/count | Status: 200
+2025-05-09 18:28:02,134 - INFO - promotion_api_client.py:146 - Найдено ID кампаний типов 8/9 для детальной проверки: 37
+2025-05-09 18:28:02,134 - INFO - promotion_api_client.py:155 - Запрос деталей для пакета ID кампаний (POST): [14050405, 14051005, 19056196, 19475897, 23496395, 23535110, 8163698, 9053071, 9053121, 9223884, 9223940, 9223980, 11574619, 14222698, 14222699, 14481792, 18127428, 18127503, 18127524, 20599508, 20599905, 20599922, 20599953, 23445604, 23772356, 24833860, 24845699, 24845701, 24921655, 24833861, 24845702, 24845703, 24845705, 24921656, 24845704, 24845698, 24845700]
+2025-05-09 18:28:02,134 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v1/promotion/adverts | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [14050405, 14051005, 19056196, 19475897, 23496395, 23535110, 8163698, 9053071, 9053121, 9223884, 9223940, 9223980, 11574619, 14222698, 14222699, 14481792, 18127428, 18127503, 18127524, 20599508, 20599905, 20599922, 20599953, 23445604, 23772356, 24833860, 24845699, 24845701, 24921655, 24833861, 24845702, 24845703, 24845705, 24921656, 24845704, 24845698, 24845700]
+2025-05-09 18:28:02,416 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v1/promotion/adverts | Status: 200
+2025-05-09 18:28:02,417 - INFO - promotion_api_client.py:200 - Найдено активных кампаний (статус 9, типы 8 или 9) после детального запроса и клиентской фильтрации: 9
+2025-05-09 18:28:02,418 - INFO - promotion_automation.py:87 - --- Оптимизация ставки для кампании ID: 24921656 (Тип: 9, Имя: 245578116 Платье Аукцион ПУДРА 19.04) ---
+2025-05-09 18:28:02,418 - WARNING - promotion_api_client.py:296 - [ЗАГЛУШКА] get_current_bid_api для campaign_id=24921656, type=9. Возвращаем 50.00 руб.
+2025-05-09 18:28:02,418 - INFO - promotion_automation.py:50 - Automator: Запрос статистики для кампании 24921656
+2025-05-09 18:28:02,418 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24921656] с payload: [{"id": 24921656}]
+2025-05-09 18:28:02,418 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921656}]
+2025-05-09 18:28:02,733 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:28:02,734 - INFO - promotion_automation.py:105 - Automator: Текущие метрики: Ставка=50.00 RUB, CTR=2.44%, ROI=-100.0%, CPC=0.08 RUB
+2025-05-09 18:28:02,734 - INFO - promotion_automation.py:119 - Automator: Условие ПОНИЖЕНИЯ ставки. Расчетная ставка: 47.00
+2025-05-09 18:28:02,734 - INFO - promotion_automation.py:128 - Automator: Рассчитана новая ставка для кампании 24921656: 190.00 RUB (старая: 50.00 RUB)
+2025-05-09 18:28:02,734 - WARNING - promotion_api_client.py:311 - [ЗАГЛУШКА] update_campaign_bid_api для campaign_id=24921656, type=9, new_bid_kop=19000, params: {'subject_id': None, 'nm_ids': []}. Обновление НЕ выполнено.
+2025-05-09 18:28:02,735 - INFO - promotion_automation.py:87 - --- Оптимизация ставки для кампании ID: 24921655 (Тип: 8, Имя: 245578116 Платье АРК ПУДРА 19.04) ---
+2025-05-09 18:28:02,735 - WARNING - promotion_api_client.py:296 - [ЗАГЛУШКА] get_current_bid_api для campaign_id=24921655, type=8. Возвращаем 50.00 руб.
+2025-05-09 18:28:02,735 - INFO - promotion_automation.py:50 - Automator: Запрос статистики для кампании 24921655
+2025-05-09 18:28:02,735 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24921655] с payload: [{"id": 24921655}]
+2025-05-09 18:28:02,735 - INFO - rate_limiter.py:89 - Rate limiting: waiting 1.05s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:03,783 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:04,508 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:04,509 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "8eae66c880dbf09544e77943c7d73feb",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:04Z"
+}
+
+2025-05-09 18:28:04,509 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:04,510 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 2.18s (attempt 1/5)
+2025-05-09 18:28:26,170 - INFO - promotion_main.py:18 - --- Запуск MCP сервера ---
+2025-05-09 18:28:26,171 - INFO - promotion_metrics_tracking.py:32 - Конфигурация для metrics_tracking загружена: {'WB_CABINET_ID': '626913'}
+2025-05-09 18:28:26,171 - INFO - promotion_metrics_tracking.py:113 - Получение списка активных кампаний для отслеживания метрик...
+2025-05-09 18:28:26,171 - INFO - promotion_api_client.py:116 - Запрос общего количества и ID кампаний с https://advert-api.wildberries.ru/adv/v1/promotion/count
+2025-05-09 18:28:26,172 - INFO - promotion_api_client.py:84 - Request: GET https://advert-api.wildberries.ru/adv/v1/promotion/count | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A'} | Body: No body
+2025-05-09 18:28:26,440 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v1/promotion/count | Status: 200
+2025-05-09 18:28:26,441 - INFO - promotion_api_client.py:146 - Найдено ID кампаний типов 8/9 для детальной проверки: 37
+2025-05-09 18:28:26,441 - INFO - promotion_api_client.py:155 - Запрос деталей для пакета ID кампаний (POST): [24833861, 24845702, 24845703, 24845705, 24921656, 24845698, 24845700, 14050405, 14051005, 19056196, 19475897, 23496395, 23535110, 8163698, 9053071, 9053121, 9223884, 9223940, 9223980, 11574619, 14222698, 14222699, 14481792, 18127428, 18127503, 18127524, 20599508, 20599905, 20599922, 20599953, 23445604, 23772356, 24845704, 24833860, 24845699, 24845701, 24921655]
+2025-05-09 18:28:26,441 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v1/promotion/adverts | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [24833861, 24845702, 24845703, 24845705, 24921656, 24845698, 24845700, 14050405, 14051005, 19056196, 19475897, 23496395, 23535110, 8163698, 9053071, 9053121, 9223884, 9223940, 9223980, 11574619, 14222698, 14222699, 14481792, 18127428, 18127503, 18127524, 20599508, 20599905, 20599922, 20599953, 23445604, 23772356, 24845704, 24833860, 24845699, 24845701, 24921655]
+2025-05-09 18:28:26,741 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v1/promotion/adverts | Status: 200
+2025-05-09 18:28:26,741 - INFO - promotion_api_client.py:200 - Найдено активных кампаний (статус 9, типы 8 или 9) после детального запроса и клиентской фильтрации: 9
+2025-05-09 18:28:26,743 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24921656 (Имя: 245578116 Платье Аукцион ПУДРА 19.04)
+2025-05-09 18:28:26,744 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24921656] с payload: [{"id": 24921656}]
+2025-05-09 18:28:26,744 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921656}]
+2025-05-09 18:28:27,491 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:27,493 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "c961d1c05623d65f996b05b065a47009",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:27Z"
+}
+
+2025-05-09 18:28:27,493 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:27,497 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 1.12s (attempt 1/5)
+2025-05-09 18:28:28,619 - INFO - rate_limiter.py:89 - Rate limiting: waiting 0.04s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:28,664 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921656}]
+2025-05-09 18:28:29,412 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:29,412 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "f95b118dad24bca09538cf8eae3fa422",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:29Z"
+}
+
+2025-05-09 18:28:29,412 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:29,413 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 1.36s (attempt 2/5)
+2025-05-09 18:28:30,772 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921656}]
+2025-05-09 18:28:31,039 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:28:31,040 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:28:31] Кампания 24921656 (245578116 Платье Аукцион ПУДРА 19.04) - CTR: 2.44%, ROI: -100.00%, CPC: 0.08, Клики: 8, Показы: 328, Затраты: 0.65, Заказы (из стат. кампании): 0
+2025-05-09 18:28:31,040 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24921655 (Имя: 245578116 Платье АРК ПУДРА 19.04)
+2025-05-09 18:28:31,041 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24921655] с payload: [{"id": 24921655}]
+2025-05-09 18:28:31,041 - INFO - rate_limiter.py:89 - Rate limiting: waiting 0.70s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:31,745 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:32,478 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:32,478 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "2aaea4ff47fb93b38c373c7b45b23639",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:32Z"
+}
+
+2025-05-09 18:28:32,479 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:32,480 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 1.59s (attempt 1/5)
+2025-05-09 18:28:34,074 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:34,827 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:34,828 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "481d62aadd985478daa8971f4d1f4398",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:34Z"
+}
+
+2025-05-09 18:28:34,828 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:34,828 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 2.03s (attempt 2/5)
+2025-05-09 18:28:36,859 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:37,605 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:37,606 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "d2fe08ebecb216710d99bfb6f1be0423",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:37Z"
+}
+
+2025-05-09 18:28:37,606 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:37,607 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 3.41s (attempt 3/5)
+2025-05-09 18:28:41,019 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:41,790 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:41,791 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "b3e5c2589dbe4b531cf61f674d540dec",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:41Z"
+}
+
+2025-05-09 18:28:41,791 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:41,792 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 4.74s (attempt 4/5)
+2025-05-09 18:28:46,534 - INFO - rate_limiter.py:89 - Rate limiting: waiting 1.09s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:47,622 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:48,377 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:48,378 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "7e9bd5e71540b16d5b1da6757c38f326",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:48Z"
+}
+
+2025-05-09 18:28:48,378 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:48,379 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 4.38s (attempt 5/5)
+2025-05-09 18:28:52,762 - INFO - rate_limiter.py:89 - Rate limiting: waiting 1.63s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:54,388 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24921655}]
+2025-05-09 18:28:55,154 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:28:55,155 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "a3d591207f3045bccfe1f9e5c4c82b8e",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:28:55Z"
+}
+
+2025-05-09 18:28:55,155 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:55,156 - ERROR - rate_limiter.py:129 - Max retries (5) exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:55,156 - ERROR - promotion_api_client.py:226 - Не удалось получить статистику кампаний [24921655]: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 222, in get_campaign_stats
+    response_obj = self._make_request('POST', url, data=payload)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\rate_limiter.py", line 107, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:28:55,157 - WARNING - promotion_metrics_tracking.py:53 - Статистика для кампании 24921655 не получена (API клиент вернул None).
+2025-05-09 18:28:55,158 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24845705 (Имя: 90339924 Платье Аукцион ФИСТАШКА 16.04)
+2025-05-09 18:28:55,159 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24845705] с payload: [{"id": 24845705}]
+2025-05-09 18:28:55,159 - INFO - rate_limiter.py:89 - Rate limiting: waiting 16.77s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:29:11,929 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845705}]
+2025-05-09 18:29:12,651 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:29:12,651 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "18bf17b19df570c736f294edac773c6b",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:29:12Z"
+}
+
+2025-05-09 18:29:12,652 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:29:12,652 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 16.31s (attempt 1/5)
+2025-05-09 18:29:28,965 - INFO - rate_limiter.py:89 - Rate limiting: waiting 8.99s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:29:37,952 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845705}]
+2025-05-09 18:29:38,354 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:29:38,355 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:29:38] Кампания 24845705 (90339924 Платье Аукцион ФИСТАШКА 16.04) - CTR: 2.71%, ROI: -100.00%, CPC: 0.07, Клики: 13, Показы: 479, Затраты: 0.91, Заказы (из стат. кампании): 0
+2025-05-09 18:29:38,355 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24845703 (Имя: 245577621 Платье Аукцион БЕЖЕВОЕ 16.04)
+2025-05-09 18:29:38,356 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24845703] с payload: [{"id": 24845703}]
+2025-05-09 18:29:38,356 - INFO - rate_limiter.py:89 - Rate limiting: waiting 8.77s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:29:47,129 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845703}]
+2025-05-09 18:29:47,866 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:29:47,866 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "00a0f20618d2f7604eeea34abc9a0369",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:29:47Z"
+}
+
+2025-05-09 18:29:47,867 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:29:47,867 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 23.51s (attempt 1/5)
+2025-05-09 18:30:11,376 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845703}]
+2025-05-09 18:30:12,100 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:30:12,101 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "87788e6206cb9b66ba4ffeb68b8390f2",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:30:12Z"
+}
+
+2025-05-09 18:30:12,101 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:30:12,102 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 15.39s (attempt 2/5)
+2025-05-09 18:30:27,494 - INFO - rate_limiter.py:89 - Rate limiting: waiting 5.53s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:30:33,026 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845703}]
+2025-05-09 18:30:33,335 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:30:33,336 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:30:33] Кампания 24845703 (245577621 Платье Аукцион БЕЖЕВОЕ 16.04) - CTR: 2.14%, ROI: -100.00%, CPC: 0.09, Клики: 12, Показы: 562, Затраты: 1.07, Заказы (из стат. кампании): 0
+2025-05-09 18:30:33,336 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24845702 (Имя: 155720636 Платье Аукцион БЕЛОЕ 16.04)
+2025-05-09 18:30:33,336 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24845702] с payload: [{"id": 24845702}]
+2025-05-09 18:30:33,337 - INFO - rate_limiter.py:89 - Rate limiting: waiting 16.29s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:30:49,630 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845702}]
+2025-05-09 18:30:50,376 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:30:50,376 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "014c88dd4b49a6492880f8ec5c4c0b81",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:30:50Z"
+}
+
+2025-05-09 18:30:50,376 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:30:50,377 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 36.44s (attempt 1/5)
+2025-05-09 18:31:26,815 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845702}]
+2025-05-09 18:31:27,550 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:31:27,551 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "3d15b0e444d06677874f2fe9c8d8f0c7",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:31:27Z"
+}
+
+2025-05-09 18:31:27,551 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:31:27,552 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 37.18s (attempt 2/5)
+2025-05-09 18:32:04,738 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845702}]
+2025-05-09 18:32:05,033 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:32:05,034 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:32:05] Кампания 24845702 (155720636 Платье Аукцион БЕЛОЕ 16.04) - CTR: 8.02%, ROI: -100.00%, CPC: 0.02, Клики: 73, Показы: 910, Затраты: 1.74, Заказы (из стат. кампании): 0
+2025-05-09 18:32:05,034 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24845701 (Имя: 90339924 Платье АРК ФИСТАШКА 16.04)
+2025-05-09 18:32:05,035 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24845701] с payload: [{"id": 24845701}]
+2025-05-09 18:32:05,035 - INFO - rate_limiter.py:89 - Rate limiting: waiting 22.72s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:32:27,757 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845701}]
+2025-05-09 18:32:28,493 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:32:28,494 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "9f18fd2cc0dbba691a5349be541d66e6",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:32:28Z"
+}
+
+2025-05-09 18:32:28,494 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:32:28,494 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 49.59s (attempt 1/5)
+2025-05-09 18:33:18,085 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845701}]
+2025-05-09 18:33:18,346 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:33:18,346 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:33:18] Кампания 24845701 (90339924 Платье АРК ФИСТАШКА 16.04) - CTR: 2.07%, ROI: -100.00%, CPC: 0.06, Клики: 48, Показы: 2318, Затраты: 3.09, Заказы (из стат. кампании): 0
+2025-05-09 18:33:18,347 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24845699 (Имя: 245577621 Платье АРК БЕЖЕВОЕ 16.04)
+2025-05-09 18:33:18,349 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24845699] с payload: [{"id": 24845699}]
+2025-05-09 18:33:18,349 - INFO - rate_limiter.py:89 - Rate limiting: waiting 16.90s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:33:35,254 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24845699}]
+2025-05-09 18:33:35,506 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:33:35,507 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:33:35] Кампания 24845699 (245577621 Платье АРК БЕЖЕВОЕ 16.04) - CTR: 3.52%, ROI: -100.00%, CPC: 0.04, Клики: 77, Показы: 2188, Затраты: 3.26, Заказы (из стат. кампании): 0
+2025-05-09 18:33:35,507 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24833861 (Имя: 90339927 Платье Аукцион ЛИЛОВЫЙ 16.04)
+2025-05-09 18:33:35,509 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24833861] с payload: [{"id": 24833861}]
+2025-05-09 18:33:35,509 - INFO - rate_limiter.py:89 - Rate limiting: waiting 21.25s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:33:56,755 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24833861}]
+2025-05-09 18:33:57,510 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 429
+2025-05-09 18:33:57,510 - ERROR - promotion_api_client.py:101 - Request to https://advert-api.wildberries.ru/adv/v2/fullstats failed with status 429. Response: {
+    "title": "too many requests",
+    "detail": "Limited by global limiter, per seller 6b875f6d-05ee-4485-acde-c143048f4dd6; See https://dev.wildberries.ru/openapi/api-information",
+    "code": "461a0b83d6bd 2950e93b5fda",
+    "requestId": "ffabbf9e3f73241cb9ee3c5faa40e892",
+    "origin": "s2s-api-auth-adv",
+    "status": 429,
+    "statusText": "Too Many Requests",
+    "timestamp": "2025-05-09T12:33:57Z"
+}
+
+2025-05-09 18:33:57,511 - ERROR - promotion_api_client.py:108 - Request exception for https://advert-api.wildberries.ru/adv/v2/fullstats: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+Traceback (most recent call last):
+  File "D:\Инфо\JNN\Вайлдберриз\1Проект WB promotion\promotion_api_client.py", line 103, in _make_request_impl
+    response.raise_for_status()
+  File "C:\Users\Acer_17d\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://advert-api.wildberries.ru/adv/v2/fullstats
+2025-05-09 18:33:57,511 - WARNING - rate_limiter.py:121 - Rate limit exceeded for https://advert-api.wildberries.ru/adv/v2/fullstats. Retrying in 33.81s (attempt 1/5)
+2025-05-09 18:34:31,319 - INFO - promotion_api_client.py:84 - Request: POST https://advert-api.wildberries.ru/adv/v2/fullstats | Headers: {'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwNDE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc2MTE3MTU3MiwiaWQiOiIwMTk2NjIyOC1mMThmLTc0Y2MtOGI0Yi00ZjQ5MDVhYWExMzAiLCJpaWQiOjcyMTY3MTYyLCJvaWQiOjYyNjkxMywicyI6MTkyLCJzaWQiOiI2Yjg3NWY2ZC0wNWVlLTQ0ODUtYWNkZS1jMTQzMDQ4ZjRkZDYiLCJ0IjpmYWxzZSwidWlkIjo3MjE2NzE2Mn0.bsUosdv21Duo1uBxOVwbZpd5DrOG7_RYgBxpLDs-0qhQdzwNl2zVMzDSWo1PcW560d1Z-_LtVRT4aIZJcTtb_A', 'Content-Type': 'application/json'} | Body: [{"id": 24833861}]
+2025-05-09 18:34:31,620 - INFO - promotion_api_client.py:98 - Response from URL: https://advert-api.wildberries.ru/adv/v2/fullstats | Status: 200
+2025-05-09 18:34:31,621 - INFO - promotion_metrics_tracking.py:67 - [2025-05-09 18:34:31] Кампания 24833861 (90339927 Платье Аукцион ЛИЛОВЫЙ 16.04) - CTR: 2.92%, ROI: -100.00%, CPC: 0.06, Клики: 4, Показы: 137, Затраты: 0.26, Заказы (из стат. кампании): 0
+2025-05-09 18:34:31,621 - INFO - promotion_metrics_tracking.py:47 - Отслеживание метрик для кампании ID: 24833860 (Имя: 90339927 Платье АРК ЛИЛОВЫЙ 16.04)
+2025-05-09 18:34:31,623 - INFO - promotion_api_client.py:220 - Запрос статистики кампании(й) ID(s): [24833860] с payload: [{"id": 24833860}]
+2025-05-09 18:34:31,623 - INFO - rate_limiter.py:89 - Rate limiting: waiting 13.62s before request to https://advert-api.wildberries.ru/adv/v2/fullstats
