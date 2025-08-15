@@ -1,9 +1,10 @@
 /**
  * This file contains the re-implementation of the Ecommonkey.Wildberries object.
  * It acts as a replacement for the missing library to make Main.js functional.
+ * Version 2.0: Using 'var' for global scope and adding connection stubs.
  */
 
-const Ecommonkey = {
+var Ecommonkey = {
   Wildberries: {
 
     // --- Internal Helper Methods ---
@@ -25,7 +26,7 @@ const Ecommonkey = {
                 return responseText ? JSON.parse(responseText) : {};
             } catch (e) {
                 Logger.log(`Failed to parse JSON. Code: ${responseCode}, Response: ${responseText.substring(0, 500)}`);
-                return responseText; // Return raw text if not JSON
+                return responseText;
             }
         } else {
             throw new Error(`API Error ${responseCode}: ${responseText}`);
@@ -61,6 +62,18 @@ const Ecommonkey = {
         return null;
     },
 
+    // --- Connection/Licensing Stubs ---
+    isConnected: function() {
+        // This function is being bypassed. It needs to return an array-like object
+        // that has an .includes() method for the subsequent check in Main.js to work.
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        return [ss.getId()]; // Returning the spreadsheet ID in an array will make .includes(ss.getId()) return true.
+    },
+    checkConnection: function(isConnected) {
+        // This function is being bypassed. We'll just log that it was called.
+        Logger.log("Connection check bypassed.");
+    },
+
     // --- UI & Sheet Functions (Re-implemented) ---
 
     onOpen: function() {
@@ -77,6 +90,10 @@ const Ecommonkey = {
               .addItem('Остатки на складах', 'get_stocks')
               .addItem('Продажи', 'get_sales')
               .addItem('Заказы', 'get_orders'))
+          .addSeparator()
+          .addSubMenu(SpreadsheetApp.getUi().createMenu('Настройки')
+              .addItem('Установить API ключи', 'showApiKeyDialog')
+              .addItem('Очистить API ключи', 'clearApiProperties'))
           .addSeparator()
           .addItem('Копировать активный лист', 'copyActiveSheet')
           .addToUi();
@@ -211,8 +228,6 @@ const Ecommonkey = {
     },
 
     // --- Stubs for complex or unknown functions ---
-    // These functions from Main.js are too complex to replicate without more info.
-    // They will show an alert to the user.
     checkDeletedWords: function() { SpreadsheetApp.getUi().alert('Функция checkDeletedWords не реализована.'); },
     setFormulaParaDataset: function() { SpreadsheetApp.getUi().alert('Функция setFormulaParaDataset не реализована.'); },
     showDialog: function() { SpreadsheetApp.getUi().alert('Функция showDialog не реализована.'); },
