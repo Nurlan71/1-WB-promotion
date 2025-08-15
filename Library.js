@@ -1,7 +1,7 @@
 /**
  * This file contains the re-implementation of the Ecommonkey.Wildberries object.
  * It acts as a replacement for the missing library to make Main.js functional.
- * Version 3.1: Added defensive check for empty advert_list to prevent .join() error.
+ * Version 3.2: Hardcoded column counts for sheet writing to prevent range mismatch errors.
  */
 
 var Ecommonkey = {
@@ -128,11 +128,10 @@ var Ecommonkey = {
         const headers = [['Тип кампании', 'Статус', 'Количество', 'ID кампаний']];
         const typeMap = { 4: "Каталог", 5: "Карточка товара", 6: "Поиск", 7: "Рекомендации", 8: "Автоматическая", 9: "Аукцион" };
         const statusMap = { '-1': "Удаляется", 4: "Готова к запуску", 7: "Завершена", 8: "Отказался", 9: "Активна", 11: "Пауза" };
-        let output = [headers];
+        let output = headers;
         if (jsonData && jsonData.adverts) {
             for (const [type, statuses] of Object.entries(jsonData.adverts)) {
                 for (const [status, campaigns] of Object.entries(statuses)) {
-                    // FIX: Check if advert_list exists and is an array before joining.
                     const advertListStr = (campaigns.advert_list && Array.isArray(campaigns.advert_list))
                         ? campaigns.advert_list.join(', ')
                         : '';
@@ -145,8 +144,9 @@ var Ecommonkey = {
                 }
             }
         }
-        if (output.length > 1) {
-            advListSheet.getRange(1, 1, output.length, output[0].length).setValues(output);
+        if (output.length > 0) {
+            // FIX: Hardcode column count to 4 to prevent mismatch error.
+            advListSheet.getRange(1, 1, output.length, 4).setValues(output);
         }
     },
 
