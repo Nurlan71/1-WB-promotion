@@ -91,6 +91,10 @@ var Ecommonkey = {
               .addItem('Продажи', 'get_sales')
               .addItem('Заказы', 'get_orders'))
           .addSeparator()
+          .addSubMenu(SpreadsheetApp.getUi().createMenu('Настройки')
+              .addItem('Установить API ключи', 'showApiKeyDialog')
+              .addItem('Очистить API ключи', 'clearApiProperties'))
+          .addSeparator()
           .addItem('Копировать активный лист', 'copyActiveSheet')
           .addToUi();
     },
