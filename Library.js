@@ -1,7 +1,7 @@
 /**
  * This file contains the re-implementation of the Ecommonkey.Wildberries object.
  * It acts as a replacement for the missing library to make Main.js functional.
- * Version 3.0: Correcting API endpoints based on user-provided documentation.
+ * Version 3.1: Added defensive check for empty advert_list to prevent .join() error.
  */
 
 var Ecommonkey = {
@@ -74,7 +74,8 @@ var Ecommonkey = {
         Logger.log("Connection check bypassed.");
     },
 
-    // --- UI & Sheet Functions ---
+    // --- UI & Sheet Functions (Re-implemented) ---
+
     onOpen: function() {
       SpreadsheetApp.getUi()
           .createMenu('Wildberries Menu')
@@ -114,9 +115,9 @@ var Ecommonkey = {
 
     // --- API Function Implementations ---
 
+    getlinks: function() { return {}; }, // Deprecated
+
     initializeAdvListSheet: function(apiKey, url) {
-        // This function is now re-implemented based on new documentation.
-        // The original call in Main.js passes a URL that is now incorrect.
         const correctUrl = "https://advert-api.wildberries.ru/adv/v1/promotion/count";
         const jsonData = this._request(correctUrl, {}, apiKey);
         const advListSheet = this._getSheet('📝 Список РК', true);
@@ -124,7 +125,6 @@ var Ecommonkey = {
     },
 
     populateAdvList: function(jsonData, advListSheet) {
-        // This function now processes the response from /adv/v1/promotion/count
         const headers = [['Тип кампании', 'Статус', 'Количество', 'ID кампаний']];
         const typeMap = { 4: "Каталог", 5: "Карточка товара", 6: "Поиск", 7: "Рекомендации", 8: "Автоматическая", 9: "Аукцион" };
         const statusMap = { '-1': "Удаляется", 4: "Готова к запуску", 7: "Завершена", 8: "Отказался", 9: "Активна", 11: "Пауза" };
@@ -132,11 +132,15 @@ var Ecommonkey = {
         if (jsonData && jsonData.adverts) {
             for (const [type, statuses] of Object.entries(jsonData.adverts)) {
                 for (const [status, campaigns] of Object.entries(statuses)) {
+                    // FIX: Check if advert_list exists and is an array before joining.
+                    const advertListStr = (campaigns.advert_list && Array.isArray(campaigns.advert_list))
+                        ? campaigns.advert_list.join(', ')
+                        : '';
                     output.push([
                         typeMap[type] || `Тип ${type}`,
                         statusMap[status] || `Статус ${status}`,
                         campaigns.count,
-                        campaigns.advert_list.join(', ')
+                        advertListStr
                     ]);
                 }
             }
@@ -154,7 +158,6 @@ var Ecommonkey = {
     },
 
     fetchCampaignData: function(campaignIds, apiKey, apiUrl) {
-        // The original call in Main.js passes a URL that is now incorrect.
         const correctUrl = "https://advert-api.wildberries.ru/adv/v1/promotion/adverts";
         const options = { method: 'post', contentType: 'application/json', payload: JSON.stringify(campaignIds) };
         const campaignData = this._request(correctUrl, options, apiKey);
@@ -174,8 +177,18 @@ var Ecommonkey = {
         return output;
     },
 
-    // Stubs for functions that are too complex or for which the API is not clear from the context
-    getlinks: function() { return {}; }, // Deprecated in favor of direct URL construction
+    // Stubs for complex or unknown functions
+    checkDeletedWords: function() { SpreadsheetApp.getUi().alert('Функция checkDeletedWords не реализована.'); },
+    setFormulaParaDataset: function() { SpreadsheetApp.getUi().alert('Функция setFormulaParaDataset не реализована.'); },
+    showDialog: function() { SpreadsheetApp.getUi().alert('Функция showDialog не реализована.'); },
+    uncheckCheckboxes: function() { SpreadsheetApp.getUi().alert('Функция uncheckCheckboxes не реализована.'); },
+    highlightCheckboxes: function() { SpreadsheetApp.getUi().alert('Функция highlightCheckboxes не реализована.'); },
+    updateSettingsFromStatistics: function() { SpreadsheetApp.getUi().alert('Функция updateSettingsFromStatistics не реализована.'); },
+    checkAndUpdateCheckboxes: function() { SpreadsheetApp.getUi().alert('Функция checkAndUpdateCheckboxes не реализована.'); },
+    updateCheckboxes_CpcCtr: function() { SpreadsheetApp.getUi().alert('Функция updateCheckboxes_CpcCtr не реализована.'); },
+    customVLOOKUP: function() { SpreadsheetApp.getUi().alert('Функция customVLOOKUP не реализована.'); },
+    setFormulasParaSettings: function() { SpreadsheetApp.getUi().alert('Функция setFormulasParaSettings не реализована.'); },
+    advanalytics: function() { SpreadsheetApp.getUi().alert('Функция advanalytics не реализована.'); },
     processSheetData: function() { SpreadsheetApp.getUi().alert('Функция processSheetData не реализована.'); },
     fetchAndProcessStats: function() { SpreadsheetApp.getUi().alert('Функция fetchAndProcessStats не реализована.'); },
 
@@ -188,6 +201,6 @@ var Ecommonkey = {
     get_main5: function(f1, f2, f3, f4) { try { f1(); f2(); f3(); f4(); } catch(e) { Logger.log("Error in get_main5: " + e); } },
     get_main6: function(f1, f2) { try { f1(); f2(); } catch(e) { Logger.log("Error in get_main6: " + e); } },
     get_main11: function(f1, f2) { try { f1(); f2(); } catch(e) { Logger.log("Error in get_main11: " + e); } },
-    get_main12: function(f1, f2) { try { f1(); f2(); } catch(e) { Logger.log("Error in get_main12: " + e); } },
+    get_main12: function(f1, f2) { try { f1(); f2(); } catch(e) { Logger.log("Error in get_main12: " + e); } }
   }
 };
