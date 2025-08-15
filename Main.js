@@ -28,7 +28,7 @@ function setFormulaParaDataUnit() { try { // 🟫 Отчет
     Ecommonkey.Wildberries.setFormulaParaDataUnit(); } catch (error) { Logger.log("Ошибка при вызове setFormulaParaDataUnit: " + error.message); }}
 
 function getCampaignId() { try { // Получаем ID РК по выбранным чекбоксам на Листе "⚙️ Настройки
-    Ecommonkey.Wildberries.getCampaignId(); } catch (error) {  Logger.log("Ошибка при вызове getCampaignId: " + error.message); }}
+    Ecommonkey.Wildberries.getCampaignId(); } catch (error) { Logger.log("Ошибка при вызове getCampaignId: " + error.message); }}
 
 function showDialog() { try { // Выводим диалоговое окно
     Ecommonkey.Wildberries.showDialog(); } catch (error) { Logger.log("Ошибка при вызове showDialog: " + error.message); }}
@@ -101,293 +101,185 @@ function get_main11() { Ecommonkey.Wildberries.get_main11(get_advBalance, get_ad
 function get_main12() { Ecommonkey.Wildberries.get_main12(search_words, search_words_per);}
 
 // ####################################################################################################################################
-// HELPER FUNCTIONS
-// ####################################################################################################################################
-
-/**
- * Готовит лист для записи данных: очищает, устанавливает заголовки.
- * @param {string} sheetName - Имя листа.
- * @param {Array<string>} headers - Массив заголовков.
- * @returns {Sheet} Объект листа.
- */
-function _setupSheet(sheetName, headers) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-  }
-  sheet.clearContents();
-  if (headers && headers.length > 0) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
-  }
-  return sheet;
-}
-
-/**
- * Получает диапазон дат из ячеек на листе '⚙️ Настройки'.
- * @param {string} fromCell - Ячейка с датой начала (напр. 'A1').
- * @param {string} toCell - Ячейка с датой окончания (напр. 'B1').
- * @returns {{from: string, to: string}} Объект с форматированными датами.
- */
-function _getDateRangeFromSettings(fromCell, toCell) {
-    const settingsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-    if (!settingsSheet) {
-        throw new Error("Лист '⚙️ Настройки' не найден.");
-    }
-    const dateFrom = settingsSheet.getRange(fromCell).getValue();
-    const dateTo = settingsSheet.getRange(toCell).getValue();
-
-    if (!dateFrom || !(dateFrom instanceof Date)) {
-        throw new Error(`Дата в ячейке ${fromCell} на листе '⚙️ Настройки' не установлена или имеет неверный формат.`);
-    }
-
-    // dateTo is optional for some endpoints
-    const effectiveDateTo = (dateTo && dateTo instanceof Date) ? dateTo : new Date();
-
-    const formattedFrom = Utilities.formatDate(dateFrom, Session.getScriptTimeZone(), "yyyy-MM-dd");
-    const formattedTo = Utilities.formatDate(effectiveDateTo, Session.getScriptTimeZone(), "yyyy-MM-dd");
-
-    return { from: formattedFrom, to: formattedTo };
-}
-
-/**
- * Находит ID выбранной кампании на листе '⚙️ Настройки'.
- * Сначала ищет отмеченный чекбокс в столбце K (строки 9-97),
- * затем, если не найдено, использует значение из ячейки O30.
- * @returns {number|null} ID кампании или null, если не найдено.
- */
-function _getSelectedCampaignId() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-  if (!sheet) {
-    SpreadsheetApp.getUi().alert("Лист '⚙️ Настройки' не найден.");
-    return null;
-  }
-
-  // Предполагается, что кампании находятся в диапазоне 9-97
-  const checkRange = sheet.getRange('K9:K97');
-  const idRange = sheet.getRange('C9:C97'); // Предполагается, что ID в столбце C
-
-  const checkboxes = checkRange.getValues();
-  const ids = idRange.getValues();
-
-  for (let i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i][0] === true) {
-      const campaignId = ids[i][0];
-      if (campaignId && typeof campaignId === 'number' && campaignId > 0) {
-        Logger.log(`Найдена выбранная кампания по чекбоксу: ${campaignId}`);
-        return campaignId;
-      }
-    }
-  }
-
-  // Запасной вариант: получить ID из ячейки O30
-  const campaignIdFromCell = sheet.getRange('O30').getValue();
-  if (campaignIdFromCell && typeof campaignIdFromCell === 'number' && campaignIdFromCell > 0) {
-    Logger.log(`Найдена кампания в ячейке O30: ${campaignIdFromCell}`);
-    return campaignIdFromCell;
-  }
-
-  SpreadsheetApp.getUi().alert('Не выбрана ни одна рекламная кампания. Пожалуйста, установите флажок в столбце K на листе "⚙️ Настройки" или укажите ID в ячейке O30.');
-  return null;
-}
-
-/**
- * Обновляет данные об общем балансе на листе '⚙️ Настройки'.
- * @param {object} balanceData - Объект с данными о балансе { balance, net, bonus }.
- */
-function _updateBalanceSheet(balanceData) {
-  if (!balanceData) return;
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-  if (!sheet) throw new Error("Лист '⚙️ Настройки' не найден.");
-
-  // Предположение: данные о балансе записываются в ячейки C3, C4, C5
-  sheet.getRange('C3').setValue(balanceData.balance);
-  sheet.getRange('C4').setValue(balanceData.net);
-  sheet.getRange('C5').setValue(balanceData.bonus);
-  Logger.log(`Баланс обновлен: ${balanceData.balance}₽ (основной), ${balanceData.net}₽ (бонусный)`);
-}
-
-/**
- * Обновляет бюджет для конкретной кампании на листе '⚙️ Настройки'.
- * @param {number} campaignId - ID кампании.
- * @param {object} budgetData - Объект с данными о бюджете { total }.
- */
-function _updateBudgetSheet(campaignId, budgetData) {
-  if (!campaignId || !budgetData || budgetData.total === undefined) return;
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-  if (!sheet) throw new Error("Лист '⚙️ Настройки' не найден.");
-
-  // Ищем строку для campaignId и обновляем столбец бюджета
-  // Предполагается, что ID в C9:C97, а бюджет в F9:F97
-  const idRange = sheet.getRange('C9:C97');
-  const ids = idRange.getValues();
-
-  for (let i = 0; i < ids.length; i++) {
-    if (ids[i][0] == campaignId) {
-      const budgetCell = sheet.getRange(i + 9, 6); // Столбец F
-      budgetCell.setValue(budgetData.total);
-      Logger.log(`Бюджет для кампании ${campaignId} обновлен: ${budgetData.total}₽`);
-      return;
-    }
-  }
-  Logger.log(`Кампания с ID ${campaignId} не найдена на листе '⚙️ Настройки' для обновления бюджета.`);
-}
-
-// ####################################################################################################################################
 // API FUNCTIONS
 // ####################################################################################################################################
 
 
 // 💳 Истории затрат РК - Метод позволяет получать историю затрат рекламной кампании.
 // Допускается 1 запрос в секунду.
+
 function get_advupd() {
-  // TODO: This function's logic is unclear due to black-box helpers.
-  // It needs to be implemented based on user's specific sheet structure.
-  SpreadsheetApp.getUi().alert("Функция get_advupd не была полностью реализована.");
-}
-
-
-// 📝 Список РК - Допускается 5 запросов в секунду.
-function get_advList() {
-  try {
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    // Fetches ALL campaigns using the /adv/v0/adverts endpoint.
-    const allCampaigns = WildberriesAPI.advert.getAllCampaigns();
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('📝 Список РК');
-    if (!sheet) throw new Error("Лист '📝 Список РК' не найден.");
-
-    sheet.clearContents();
-    const statusMap = { 4: "Готова к запуску", 7: "Завершена", 8: "Запланирована", 9: "Идут показы", 11: "Пауза" };
-    const typeMap = { 4: "Каталог", 5: "Карточка товара", 6: "Поиск", 7: "Рекомендации", 8: "Автоматическая", 9: "Поиск + каталог" };
-    const headers = [['ID', 'Название', 'Тип', 'Статус', 'Дн. бюджет', 'Начало', 'Конец']];
-    const output = [headers];
-
-    if (allCampaigns && allCampaigns.length > 0) {
-      allCampaigns.forEach(c => {
-        output.push([
-          c.advertId,
-          c.name,
-          typeMap[c.type] || `Тип ${c.type}`,
-          statusMap[c.status] || `Статус ${c.status}`,
-          c.dailyBudget,
-          c.startTime ? new Date(c.startTime).toLocaleString() : '',
-          c.endTime ? new Date(c.endTime).toLocaleString() : ''
-        ]);
-      });
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) { const statusKvo = 'emonkey_advert';
+    const apiKey = getAPIStatus(statusKvo); Logger.log('Используемый API Key: ' + apiKey);
+    const Urls = Ecommonkey.Wildberries.getlinks();
+    try {Ecommonkey.Wildberries.processSheetData(Urls, apiKey);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    if (output.length > 1) {
-      sheet.getRange(1, 1, output.length, output[0].length).setValues(output);
-    }
-    Logger.log("Список РК успешно обновлен.");
-  } catch (e) {
-    Logger.log(`Ошибка в get_advList: ${e.message}\n${e.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка в get_advList: ${e.message}`);
   }
 }
 
+// 📝 Список РК - Допускается 5 запросов в секунду.
+
+function get_advList() {
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) { var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks(); const url = `${Urls.advcount}`;
+  var { jsonData, advListSheet } = Ecommonkey.Wildberries.initializeAdvListSheet(apiKey, url);
+  try {Ecommonkey.Wildberries.populateAdvList(jsonData, advListSheet);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+  SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
+    }
+  }
+}
 
 // ✅ Статистика РК
 // Метод позволяет получать информацию о кампаниях по query параметрам, либо по списку ID кампаний.
 // Допускается 5 запросов в секунду.
+
 function get_adverts() {
-  try {
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('✅ Статистика РК');
-    if (!sheet) throw new Error("Лист '✅ Статистика РК' не найден.");
-
-    // Assumption: campaign IDs are read from a specific range, e.g., 'A2:A' on a settings sheet.
-    const settingsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-    const campaignIds = settingsSheet.getRange('A2:A' + settingsSheet.getLastRow()).getValues().flat().filter(id => id);
-
-    if (!campaignIds || campaignIds.length === 0) {
-      Logger.log("Не найдены ID кампаний для запроса.");
-      return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+    var status_kvo = 'emonkey_advert';
+    var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+    var { advertSheet, campaignIds } = Ecommonkey.Wildberries.setupAdvertSheet();
+    const Urls = Ecommonkey.Wildberries.getlinks();
+    const apiUrl = `${Urls.advadverts}`;
+    try {
+      var output = Ecommonkey.Wildberries.fetchCampaignData(campaignIds, apiKey, apiUrl);
+      if (output.length > 1) {
+      advertSheet.getRange(1, 1, output.length, output[0].length).setValues(output);
+      advertSheet.getRange(2, 1, output.length - 1, output[0].length).setHorizontalAlignment('left'); }
+      else { Logger.log("Нет данных для записи в таблицу."); }}
+      catch (error) { Logger.log('Ошибка при выполнении: ' + error);
+      SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    const campaignData = WildberriesAPI.advert.getCampaignList(campaignIds);
-
-    const statusMap = { 4: "Готова к запуску", 7: "Отказался", 8: "Запланирована", 9: "Идут показы", 11: "Пауза" };
-    const typeMap = { 4: "Каталог", 5: "Карточка товара", 6: "Поиск", 7: "Рекомендации", 8: "Автоматическая", 9: "Поиск + каталог" };
-    const headers = ["ID", "Название", "Тип", "Статус", "Дн. бюджет", "Начало", "Конец"];
-    const output = [headers];
-
-    if (campaignData) {
-      campaignData.forEach(c => {
-        output.push([c.advertId, c.name, typeMap[c.type] || c.type, statusMap[c.status] || c.status, c.dailyBudget, c.startTime, c.endTime]);
-      });
-    }
-
-    sheet.clearContents();
-    if (output.length > 1) {
-      sheet.getRange(1, 1, output.length, output[0].length).setValues(output);
-      sheet.getRange(2, 1, output.length - 1, output[0].length).setHorizontalAlignment('left');
-    } else {
-      Logger.log("Нет данных для записи в таблицу.");
-    }
-  } catch(e) {
-    Logger.log(`Ошибка в get_adverts: ${e.message}`);
-    SpreadsheetApp.getUi().alert(`Ошибка в get_adverts: ${e.message}`);
   }
 }
 
+// 🚧 Статистика РК - Возвращает статистику кампаний.
+// Максимум 1 запрос в минуту.
+// Данные вернутся для кампаний в статусе 7, 9 и 11.
+// Важно. В запросе можно передавать либо параметр dates либо параметр interval, но не оба.
+// Можно отправить запрос только с ID кампании. При этом вернутся данные за последние сутки, но не за весь период существования кампании.
+
 function get_advStats() {
-  // TODO: Implementation requires understanding the logic of fetchAndProcessStats,
-  // aggregateData, and setupFullstatsSheet from the old library.
-  SpreadsheetApp.getUi().alert("Функция get_advStats требует дополнительной настройки под вашу таблицу.");
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+    var status_kvo = 'emonkey_advert';
+    var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+    const Urls = Ecommonkey.Wildberries.getlinks();
+    const apiUrl = `${Urls.advfullstats}`;
+    try {const responsefullstat = Ecommonkey.Wildberries.fetchAndProcessStats(apiUrl, apiKey);
+      if (responsefullstat) {
+        const records = Ecommonkey.Wildberries.aggregateData(responsefullstat);
+        if (records.length > 0) {
+          const { advStatSheet, headers } = Ecommonkey.Wildberries.setupFullstatsSheet();
+          advStatSheet.getRange(advStatSheet.getLastRow() + 1, 1, records.length, headers.length).setValues(records);
+          Ecommonkey.Wildberries.updateSettingsFromStatistics(); // Запускаем следующую функцию
+        } else {Logger.log("Нет данных для записи в таблицу.");}}
+    } catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
+  }
 }
 
-function get_advStats_weeks() {
-  // TODO: Implementation requires understanding the logic of setupFullstatsWeekSheet
-  // and avdFullWeekProcessData from the old library, especially how datePeriods are handled.
-  SpreadsheetApp.getUi().alert("Функция get_advStats_weeks требует дополнительной настройки под вашу таблицу.");
+// 🚧 Статистика РК 🧸 - Возвращает статистику кампаний.
+// Максимум 1 запрос в минуту.
+// Данные вернутся для кампаний в статусе 7, 9 и 11.
+// Важно. В запросе можно передавать либо параметр dates либо параметр interval, но не оба.
+// Можно отправить запрос только с ID кампании. При этом вернутся данные за последние сутки, но не за весь период существования кампании.
+
+function get_advStats_weeks() { try {
+    const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+    const seePro = Ecommonkey.Wildberries.isConnected();
+    const isConnected = seePro.includes(ids); // Проверяем подключение к Wildberries
+    Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+    if (isConnected) {
+      var status_kvo = 'emonkey_advert';
+      var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+      const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.advfullstats}`;
+      var {datePeriods, campaignIds} = Ecommonkey.Wildberries.setupFullstatsWeekSheet(); // Настраиваем таблицу для статистики
+      Ecommonkey.Wildberries.avdFullWeekProcessData(datePeriods, campaignIds, apiKey, apiUrl);} // Обрабатываем данные по полной статистике за каждую неделю
+      else {Logger.log("Нет данных для записи в таблицу."); }}
+      catch (error) {Logger.log('Ошибка при выполнении: ' + error); // Логируем ошибки
+      SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message); // Показываем сообщение об ошибке пользователю
+  }
 }
 
-function get_stats_keywords() {
-  // TODO: Implementation requires understanding the logic of fetchAndUpdateStatsADVS.
-  SpreadsheetApp.getUi().alert("Функция get_stats_keywords требует дополнительной настройки под вашу таблицу.");
+// 🚧 Запросы - Статистика по ключевым фразам для Автоматических кампаний и Аукциона
+// Возвращает статистику по ключевым фразам за каждый день, когда кампания была активна.
+// За один запрос можно получить данные максимум за 7 дней.
+// Информация обновляется раз в час.
+// Максимум 4 запроса секунду
+
+function get_stats_keywords() { try {
+        const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+        const seePro = Ecommonkey.Wildberries.isConnected();
+        const isConnected = seePro.includes(ids); // Проверяем подключение к Wildberries
+        Ecommonkey.Wildberries.checkConnection(isConnected); if (isConnected) { // Проверяем соединение
+        var status_kvo = 'emonkey_statistics';
+        var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+        if (apiKey) { Ecommonkey.Wildberries.fetchAndUpdateStatsADVS(apiKey); }
+        else { Logger.log("Нет данных для записи в таблицу."); }}
+        else { Logger.log("Не удалось установить соединение с Wildberries."); }}
+        catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message); }
 }
+
+// 🚧 Запросы 🧸 - Статистика по ключевым фразам для Автоматических кампаний и Аукциона
+// Возвращает статистику по ключевым фразам за каждый день, когда кампания была активна.
+// За один запрос можно получить данные максимум за 7 дней.
+// Информация обновляется раз в час.
+// Максимум 4 запроса секунду
 
 function get_stats_keywords_weeks() {
-  // TODO: Implementation requires understanding how initializeDataSheetAdvWord and getKeywordStats
-  // from the old library worked, especially with date ranges.
-  SpreadsheetApp.getUi().alert("Функция get_stats_keywords_weeks требует дополнительной настройки под вашу таблицу.");
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected(); const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+    var credentials = Ecommonkey.Wildberries.getCampaignId();
+    if (!credentials) { Logger.log('Ошибка: Учетные данные отсутствуют');return;}
+    var campaignId = credentials.campaignId;  Logger.log('Получен campaignId: ' + campaignId);
+    try {
+      var status_kvo = 'emonkey_advert';
+      var apiKey = getAPIStatus(status_kvo);
+      Logger.log('Используемый API Key: ' + apiKey);
+      var { advStatKeySheet, datePeriods } = Ecommonkey.Wildberries.initializeDataSheetAdvWord();
+      Ecommonkey.Wildberries.getKeywordStats(datePeriods, campaignId, apiKey, advStatKeySheet);}
+    catch (error) { Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message); }
+  }
 }
 
+// 🚧 Кластер - Статистика автоматической кампании по кластерам фраз
+// Возвращает кластеры ключевых фраз (наборы похожих), по которым показывались товары в кампании, и количество показов по ним.
+// В ответ метода попадают только те фразы, по которым товары показывались хотя бы один раз.
+// Информация обновляется раз в 15 минут.
+// Максимум — 4 запроса секунду.
+
 function get_words_clust() {
-  try {
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    const settingsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⚙️ Настройки');
-    const campaignId = settingsSheet.getRange('O30').getValue(); // Assumption
-    if (!campaignId) throw new Error("ID кампании не найден в ячейке O30 на листе '⚙️ Настройки'");
-
-    const clusterData = WildberriesAPI.advert.getClusters(campaignId);
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('🚧 Кластеры');
-    if (!sheet) throw new Error("Лист '🚧 Кластеры' не найден.");
-
-    sheet.clearContents();
-    const headers = ["Кластер", "Количество"];
-    const output = [headers];
-
-    if (clusterData && clusterData.clusters) {
-      clusterData.clusters.forEach(item => {
-        output.push([item.cluster, item.count]);
-      });
-    }
-    sheet.getRange(1, 1, output.length, output[0].length).setValues(output);
-    Logger.log(`Кластеры для кампании ${campaignId} успешно загружены.`);
-  } catch (e) {
-    Logger.log(`Ошибка в get_words_clust: ${e.message}`);
-    SpreadsheetApp.getUi().alert(`Ошибка в get_words_clust: ${e.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected(); const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId();
+  if (!credentials) return; var campaignId = credentials.campaignId;
+  var advClustSheet = Ecommonkey.Wildberries.setupAdvClustSheet();
+  Ecommonkey.Wildberries.fetchAndPopulateClusterData(campaignId, apiKey, advClustSheet);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -402,79 +294,45 @@ function setexcludedFormulas() { try {
     Ecommonkey.Wildberries.setexcludedFormulas(); }
     catch (error) { Logger.log("Ошибка при вызове setexcludedFormulas: " + error.message); }}
 
-/**
- * Собирает ключевые слова для исключения с листа '⛔ Минус фразы'.
- * @returns {Array<string>} Массив фраз для исключения.
- */
-function _getPhrasesToExcludeFromSheet() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('⛔ Минус фразы');
-    if (!sheet) {
-        SpreadsheetApp.getUi().alert("Лист '⛔ Минус фразы' не найден.");
-        return [];
-    }
-    const data = sheet.getRange("A2:B" + sheet.getLastRow()).getValues();
-    const phrases = [];
-    for (const row of data) {
-        // Предполагается: чекбокс в A, фраза в B
-        if (row[0] === true && row[1]) {
-            phrases.push(row[1]);
-        }
-    }
-    return phrases;
-}
-
 function set_excluded() {
-  try {
-    // Сохраняем вызов оригинальной функции для установки формул
-    setexcludedFormulas();
-
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) return;
-
-    const phrasesToExclude = _getPhrasesToExcludeFromSheet();
-    if (phrasesToExclude.length === 0) {
-      SpreadsheetApp.getUi().alert("Не выбрано ни одной фразы для исключения.");
-      return;
-    }
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    // API перезаписывает список, поэтому сначала получаем текущий список
-    const currentExcluded = WildberriesAPI.advert.getExcludedPhrases(campaignId);
-    const newExcludedSet = new Set([...currentExcluded, ...phrasesToExclude]);
-    const finalExcludedList = Array.from(newExcludedSet);
-
-    WildberriesAPI.advert.setExcludedPhrases(campaignId, finalExcludedList);
-
-    SpreadsheetApp.getUi().alert(`Минус-фразы для кампании ${campaignId} обновлены.`);
-
-  } catch (error) {
-    Logger.log(`Ошибка в set_excluded: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при установке минус-фраз: ${error.message}`);
+  setexcludedFormulas();
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected(); const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId(); if (!credentials) return;
+  var campaignId = credentials.campaignId;
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.advsetexcluded}${campaignId}`;
+  Ecommonkey.Wildberries.sendExcludedPhrases(apiUrl, apiKey); }
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
-// ⛔ Удалить минус фразы
+// ⛔ Удалить минус фразы - Метод позволяет устанавливать или удалять минус фразы.
+// Допускается 1 запрос в 6 секунд.
+// Отправка пустого массива удаляет все минус-фразы из кампании.
+// Эта функция удалит ⛔ все исключенные запросы и вернет их в плюс фразы
+
 function delete_excluded() {
-  try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const seePro = Ecommonkey.Wildberries.isConnected(); const isConnected = seePro.includes(ids);
+  Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId(); if (!credentials) return;
+  var campaignId = credentials.campaignId;
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.advsetexcluded}${campaignId}`;
 
-    const ui = SpreadsheetApp.getUi();
-    const response = ui.alert('Подтверждение', 'Вы точно хотите удалить все минус-фразы?', ui.ButtonSet.YES_NO);
-    if (response !== ui.Button.YES) return;
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    // Отправка пустого массива удаляет все минус-фразы
-    WildberriesAPI.advert.setExcludedPhrases(campaignId, []);
-
-    ui.alert(`Все минус-фразы для кампании ${campaignId} были удалены.`);
-  } catch (error) {
-    Logger.log(`Ошибка в delete_excluded: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при удалении минус-фраз: ${error.message}`);
+  // Запрашиваем подтверждение у пользователя
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert('Подтверждение удаления', 'Вы точно хотите удалить все минус слова и добавить их в плюс фразы?',ui.ButtonSet.YES_NO );
+  if (response != ui.Button.YES) { return; }
+  var payload = { "excluded": [] };
+  Ecommonkey.Wildberries.sendExcludedRequest(apiUrl, apiKey, payload, ui);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error);  SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -483,27 +341,19 @@ function delete_excluded() {
 // Допускается 5 запросов в секунду.
 
 function advPause() {
-  try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId(); if (!credentials) return; var campaignId = credentials.campaignId;
 
-    var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Подтверждение', `Вы точно хотите поставить кампанию ID ${campaignId} на паузу?`, ui.ButtonSet.YES_NO);
-    if (response !== ui.Button.YES) {
-      return;
-    }
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    WildberriesAPI.advert.pauseCampaign(campaignId);
-
-    Logger.log(`Кампания ${campaignId} успешно поставлена на паузу.`);
-    ui.alert(`Кампания ${campaignId} успешно поставлена на паузу.`);
-
-  } catch (error) {
-    Logger.log(`Ошибка при выполнении advPause: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при постановке кампании на паузу: ${error.message}`);
+  // Запрашиваем подтверждение у пользователя
+  var response = Browser.msgBox("Вы точно хотите поставить кампанию на паузу?", Browser.Buttons.YES_NO); if (response === 'no') return;
+  const Urls = Ecommonkey.Wildberries.getlinks();  const url = `${Urls.advpause}${campaignId}`;
+  var options = {method: "get", headers: {"Authorization": apiKey}, muteHttpExceptions: true};
+  Ecommonkey.Wildberries.sendRequestPause(url, options); }
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message); }
   }
 }
 
@@ -511,74 +361,63 @@ function advPause() {
 // ▶️ Старт РК
 // Метод позволяет запускать кампании находящиеся в статусах 4 - готова к запуску или 11 - кампания на паузе.
 // Допускается 5 запросов в секунду.
+// Для запуска кампании со статусом 11 необходимо наличие у неё пополненного бюджета.
+// Чтобы запустить кампанию со статусом 4 необходимо выполнить два условия (поочередность действий значения не имеет):
+// 1. После создания кампании в кабинете ВБ. Продвижение необходимо нажать кнопку "Применить изменения".
+// 2. Установить бюджет.
+
 function advStart() {
-  try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) return;
-
-    var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Подтверждение', `Вы точно хотите запустить кампанию ID ${campaignId}?`, ui.ButtonSet.YES_NO);
-    if (response !== ui.Button.YES) {
-      return;
-    }
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    WildberriesAPI.advert.startCampaign(campaignId);
-
-    Logger.log(`Кампания ${campaignId} успешно запущена.`);
-    ui.alert(`Кампания ${campaignId} успешно запущена.`);
-
-  } catch (error) {
-    Logger.log(`Ошибка при выполнении advStart: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при запуске кампании: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId();
+  if (!credentials) return; var campaignId = credentials.campaignId;
+  var response = Browser.msgBox("Вы точно хотите запустить кампанию?", Browser.Buttons.YES_NO);
+  if (response === 'no') { return; }
+  const Urls = Ecommonkey.Wildberries.getlinks(); const url = `${Urls.advstart}${campaignId}`;
+  Ecommonkey.Wildberries.fetchCampaignDataStart(url, apiKey);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
 // Массовая проверка бюджета РК для пополнения
 function get_advBudgetMass() {
   const status_kvo = 'emonkey_advert';
-  const apiKey = getAPIStatus(status_kvo);
-  WildberriesAPI.initialize({ advert: apiKey }); // Initialize once
-
+  const apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks(); const baseUrl = Urls.advbudget;
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.getSheetByName('📆 Пополнение РК');
   const idRange = sheet.getRange('A2:A' + sheet.getLastRow()).getValues();
-  const campaignIds = idRange.flat().filter(id => id);
-
-  sheet.getRange('E2:E' + sheet.getLastRow()).clearContent();
-  Logger.log('Очищен диапазон E2:E');
-
-  if (campaignIds.length === 0) {
-    Logger.log('Нет доступных campaignId для обработки.');
-    return;
-  }
-
+  const campaignIds = idRange.flat().filter(id => id); // убираем пустые строки
+  sheet.getRange('E2:E' + sheet.getLastRow()).clearContent(); Logger.log('Очищен диапазон E2:E');
+  if (campaignIds.length === 0) { Logger.log('Нет доступных campaignId для обработки.'); return;}
+  const options = { muteHttpExceptions: true, headers: { Authorization: apiKey, accept: "application/json; charset=utf-8" } };
   campaignIds.forEach((campaignId, index) => {
-    Logger.log(`Обработка Campaign ID: ${campaignId}`);
+    const url = `${baseUrl}${campaignId}`; Logger.log(`Отправляем запрос для Campaign ID: ${campaignId} (URL: ${url})`);
     let attempts = 0;
     let success = false;
     while (attempts < 3 && !success) {
       try {
-        const responseBody = WildberriesAPI.advert.getBudget(campaignId);
-        const total = responseBody.total || 0;
-        sheet.getRange(index + 2, 5).setValue(total); // Column E
-        Logger.log(`ID ${campaignId}: успешно получен бюджет: ${total}₽`);
-        success = true;
+        const response = UrlFetchApp.fetch(url, options);
+        const responseCode = response.getResponseCode();
+        const responseBody = JSON.parse(response.getContentText());
+
+        if (responseCode === 200) { const total = responseBody.total || 0; sheet.getRange(index + 2, 5).setValue(total); // Колонка E
+          Logger.log(`ID ${campaignId}: успешно получен бюджет: ${total}₽`); success = true; // Успешно завершили
+        } else if (responseCode === 400) { Logger.log(`ID ${campaignId}: Ошибка 400 (Неверный запрос): ${JSON.stringify(responseBody)}`); success = true; // Ошибка клиента
+        } else if (responseCode === 401) { Logger.log(`ID ${campaignId}: Ошибка 401 (Не авторизован): ${JSON.stringify(responseBody)}`); success = true; // Ошибка авторизации
+        } else { Logger.log(`ID ${campaignId}: Ошибка ${responseCode}: ${JSON.stringify(responseBody)}`); success = true;} // Другие ошибки - логируем и идем дальше
+
       } catch (error) {
-        attempts++;
-        Logger.log(`ID ${campaignId}: Попытка ${attempts} - Произошла ошибка: ${error.message}`);
-        if (attempts >= 3) {
-          Logger.log(`ID ${campaignId}: Ошибка повторяется. Пропускаем после 3 попыток.`);
-        } else {
-          Utilities.sleep(300); // Wait before retrying
-        }
+        attempts++; Logger.log(`ID ${campaignId}: Попытка ${attempts} - Произошла ошибка: ${error.message}`);
+        if (attempts >= 3) { Logger.log(`ID ${campaignId}: Ошибка повторяется. Пропускаем после 3 попыток.`);
+        } else { Utilities.sleep(300);} // Пауза перед новой попыткой
       }
     }
-    Utilities.sleep(300); // Pause between IDs
-  });
-  Logger.log('Обработка всех Campaign ID завершена.');
+    Utilities.sleep(300); // Пауза между ID
+  }); Logger.log('Обработка всех Campaign ID завершена.');
 }
 
 // Автопополнение и запуск Рекламных кампаний по времени
@@ -622,50 +461,42 @@ function startCampaignsMassiv() {
   const data = sheet.getRange('A2:A' + sheet.getLastRow()).getValues();
   const status_kvo = 'emonkey_advert';
   const apiKey = getAPIStatus(status_kvo);
-  WildberriesAPI.initialize({ advert: apiKey });
+  const Urls = Ecommonkey.Wildberries.getlinks();
 
-  const requestsPerSecond = 3;
-  const delay = 1000 / requestsPerSecond;
+  const requestsPerSecond = 3; // Ограничение запросов
+  const delay = 1000 / requestsPerSecond; // Задержка в миллисекундах между запросами
   let lastRequestTime = Date.now();
 
   data.forEach((row, index) => {
     const campaignId = row[0];
-    if (!campaignId) { Logger.log(`[${index + 2}] ⚠️ Пропущена пустая строка`); return; }
+    if (!campaignId) {    Logger.log(`[${index + 2}] ⚠️ Пропущена пустая строка`); return; }
+    const url = `${Urls.advstart}${campaignId}`;
+    const options = {  method: 'get', headers: { 'Authorization': apiKey }, muteHttpExceptions: true };
 
     let attempt = 0;
     let success = false;
 
     while (attempt < 3 && !success) {
-      attempt++;
+      attempt++; // Контроль частоты запросов
       const timeSinceLast = Date.now() - lastRequestTime;
-      if (timeSinceLast < delay) { Utilities.sleep(delay - timeSinceLast); }
+      if (timeSinceLast < delay) { Utilities.sleep(delay - timeSinceLast);}
       lastRequestTime = Date.now();
 
       try {
-        WildberriesAPI.advert.startCampaign(campaignId);
-        Logger.log(`[${index + 2}] ✅ [Запуск] Успешно ID: ${campaignId}`);
-        success = true;
-      } catch (e) {
-        const errorMessage = e.message || '';
-        if (errorMessage.includes("status 422")) {
-          Logger.log(`[${index + 2}] ⚠️ [422] Статус не изменён для ID: ${campaignId}`);
-          success = true; // Don't retry
-        } else if (errorMessage.includes("status 429")) {
-          Logger.log(`[${index + 2}] ⚠️ [429] Слишком много запросов. Пропуск ID: ${campaignId}`);
-          success = true; // Don't retry
-        } else if (errorMessage.includes('Address unavailable')) {
-          Logger.log(`[${index + 2}] ❌ [Попытка ${attempt}] Ошибка сети ID ${campaignId}: ${errorMessage}`);
-          if (attempt >= 3) {
-            Logger.log(`[${index + 2}] 🚫 Максимальное число попыток для ID ${campaignId}.`);
-          } else {
-            Utilities.sleep(1500);
-          }
-        } else {
-          Logger.log(`[${index + 2}] ❌ [${e.message}] Неизвестная ошибка запуска ID: ${campaignId}`);
-          success = true; // Don't retry on other unknown errors
-        }
+        const response = UrlFetchApp.fetch(url, options);
+        const code = response.getResponseCode();
+        const text = response.getContentText();
+
+        if (code === 200) { Logger.log(`[${index + 2}] ✅ [Запуск] Успешно ID: ${campaignId}`); success = true;}
+        else if (code === 422) { Logger.log(`[${index + 2}] ⚠️ [422] Статус не изменён для ID: ${campaignId}`);  success = true;} // 422 — это не ошибка подключения
+        else if (code === 429) { Logger.log(`[${index + 2}] ⚠️ [429] Слишком много запросов. Пропуск ID: ${campaignId}`);  success = true;} // 429 — пропускаем
+        else { Logger.log(`[${index + 2}] ❌ [${code}] Ошибка запуска ID: ${campaignId}, Ответ: ${text}`); success = true;} // Ошибки сервера не повторяем
+      } catch (e) { Logger.log(`[${index + 2}] ❌ [Попытка ${attempt}] Ошибка ID ${campaignId}: ${e.message}`);
+        if (e.message.includes('Address unavailable')) {
+        if (attempt < 3) { Logger.log(`[${index + 2}] 🔄 Повторная попытка запуска ID: ${campaignId} (попытка ${attempt + 1})`); Utilities.sleep(1500);} // доп. задержка перед новой попыткой
+        else { Logger.log(`[${index + 2}] 🚫 Максимальное число попыток для ID ${campaignId}. Переход к следующему.`);}}
+        else { Logger.log(`[${index + 2}] 🚫 Ошибка не связана с сетью. Пропуск ID: ${campaignId}`); break;}}
       }
-    }
   });
 }
 
@@ -680,22 +511,18 @@ function showDepositDialog() {
 }
 
 function post_advDeposit(sum, type) {
-  try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) {
-        SpreadsheetApp.getUi().alert("Не удалось определить ID кампании для пополнения.");
-        return;
-    }
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    WildberriesAPI.advert.depositToCampaign(campaignId, sum, type);
-
-    SpreadsheetApp.getUi().alert(`Бюджет кампании ${campaignId} успешно пополнен на ${sum} ₽.`);
-  } catch (error) {
-    Logger.log(`Ошибка в post_advDeposit: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при пополнении бюджета: ${error.message}`);
+    const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+    const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+    if (isConnected) {
+    try {var status_kvo = 'emonkey_advert';
+    var apiKey = getAPIStatus(status_kvo);Logger.log('Используемый API Key: ' + apiKey);
+    var credentials = Ecommonkey.Wildberries.getCampaignId();
+    if (!credentials) { Logger.log('Не удалось получить идентификатор кампании.');return;}
+    const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.advdeposit}${credentials.campaignId}`;
+    var response = Ecommonkey.Wildberries.sendDepositRequest(apiUrl, sum, type, apiKey);
+    if (response) {if (response.getResponseCode() === 200) {Browser.msgBox('Бюджет успешно пополнен');}
+    else {Browser.msgBox('Ошибка: ' + response.getResponseCode() + ' - ' + response.getContentText());}}}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -704,18 +531,18 @@ function massDepositAdv() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('📆 Пополнение РК');
   const lastRow = sheet.getLastRow();
 
-  const data = sheet.getRange('A2:C' + lastRow).getValues();
-  const budgetValues = sheet.getRange('E2:E' + lastRow).getValues();
-  const threshold = sheet.getRange('E1').getValue();
+  const data = sheet.getRange('A2:C' + lastRow).getValues(); // A - ID, C - сумма пополнения
+  const budgetValues = sheet.getRange('E2:E' + lastRow).getValues(); // E - текущие бюджеты
+  const threshold = sheet.getRange('E1').getValue(); // Порог
 
-  if (isNaN(threshold)) { Logger.log('❌ Ошибка: Значение в E1 не является числом. Ожидается порог пополнения бюджета.'); return; }
+  if (isNaN(threshold)) {  Logger.log('❌ Ошибка: Значение в E1 не является числом. Ожидается порог пополнения бюджета.'); return;}
   const typeCell = sheet.getRange('L1').getValue();
   const type = parseInt(typeCell, 10);
-  if (isNaN(type)) { Logger.log('❌ Ошибка: Значение в L1 не является числом. Ожидается тип пополнения (например, 0, 1, 3).'); return; }
+  if (isNaN(type)) { Logger.log('❌ Ошибка: Значение в L1 не является числом. Ожидается тип пополнения (например, 0, 1, 3).'); return;}
 
   const status_kvo = 'emonkey_advert';
   const apiKey = getAPIStatus(status_kvo);
-  WildberriesAPI.initialize({ advert: apiKey });
+  const Urls = Ecommonkey.Wildberries.getlinks();
 
   data.forEach((row, index) => {
     const campaignId = row[0];
@@ -723,81 +550,77 @@ function massDepositAdv() {
     const currentBudget = parseFloat(budgetValues[index][0]);
 
     if (!campaignId || !sum || isNaN(currentBudget)) {
-      Logger.log(`[${index + 2}] ⚠️ Пропущена строка с неполными или некорректными данными: ID=${campaignId}, сумма=${sum}, бюджет=${currentBudget}`);
-      return;
-    }
+    Logger.log(`[${index + 2}] ⚠️ Пропущена строка с неполными или некорректными данными: ID=${campaignId}, сумма=${sum}, бюджет=${currentBudget}`); return;}
 
-    if (currentBudget >= threshold) {
-      Logger.log(`[${index + 2}] ⏩ Пропущено: бюджет (${currentBudget}₽) >= порога (${threshold}₽)`);
-      return;
-    }
+    if (currentBudget >= threshold) { Logger.log(`[${index + 2}] ⏩ Пропущено: бюджет (${currentBudget}₽) >= порога (${threshold}₽)`); return; }
+
+    const apiUrl = `${Urls.advdeposit}${campaignId}`;
+    const payload = { sum: parseInt(sum, 10), type: type, return: true };
+    const options = { method: 'post', contentType: 'application/json', headers: { 'Authorization': apiKey }, payload: JSON.stringify(payload), muteHttpExceptions: true };
 
     let attempt = 0;
     let success = false;
 
-    while (attempt < 3 && !success) {
+    while (attempt < 3 && !success) { // 1 основная + 2 повторные попытки
       attempt++;
       try {
         Logger.log(`[${index + 2}] 🔄 Попытка ${attempt} для ID: ${campaignId}`);
-        const responseData = WildberriesAPI.advert.depositToCampaign(campaignId, sum, type);
-        Logger.log(`[${index + 2}] ✅ [Пополнение] Попытка ${attempt}: ID: ${campaignId}, Ответ: ${JSON.stringify(responseData)}`);
-        success = true;
-      } catch (e) {
-        Logger.log(`[${index + 2}] ❌ [Пополнение] Попытка ${attempt}: Ошибка ID ${campaignId}: ${e.message}`);
-      }
+        const response = UrlFetchApp.fetch(apiUrl, options);
+        const code = response.getResponseCode();
+        const text = response.getContentText();
 
-      if (!success && attempt < 3) {
-        Utilities.sleep(1200); // Пауза между повторными попытками
-      }
+        if (code >= 200 && code < 300) {
+          Logger.log(`[${index + 2}] ✅ [Пополнение] Попытка ${attempt}: ID: ${campaignId}, Код: ${code}, Ответ: ${text}`); success = true;}
+          else {Logger.log(`[${index + 2}] ⚠️ [Пополнение] Попытка ${attempt}: Ошибка кода ${code}, Ответ: ${text}`);}
+      } catch (e) { Logger.log(`[${index + 2}] ❌ [Пополнение] Попытка ${attempt}: Ошибка ID ${campaignId}: ${e.message}`);}
+
+      if (!success && attempt < 3) {Utilities.sleep(1200);} // Пауза между повторными попытками
     }
-    if (!success) {
-      Logger.log(`[${index + 2}] 🚫 Все попытки пополнения для ID ${campaignId} завершились неудачей.`);
-    }
+    if (!success) { Logger.log(`[${index + 2}] 🚫 Все попытки пополнения для ID ${campaignId} завершились неудачей.`);}
     Utilities.sleep(1200); // Основная пауза между кампаниями
-  });
-  Logger.log('✅ Массовое пополнение завершено.');
+  }); Logger.log('✅ Массовое пополнение завершено.');
 }
 
 // 💵 Баланс РК
 // Метод позволяет получать информацию о счёте, балансе и бонусах продавца.
 // Допускается 1 запрос в секунду.
+
 function get_advBalance() {
-  try {
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    const balanceData = WildberriesAPI.advert.getBalance();
-    _updateBalanceSheet(balanceData);
-
-    Utilities.sleep(1000);
-
-    get_advBudget();
-
-  } catch (error) {
-    Logger.log('Ошибка при получении баланса: ' + error.message);
-    SpreadsheetApp.getUi().alert('Ошибка при получении баланса: ' + error.message);
-  }
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+    var status_kvo = 'emonkey_advert'; // Здесь можно менять статус
+    var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+    const Urls = Ecommonkey.Wildberries.getlinks(); const url = `${Urls.advbalance}`;
+    const options = { muteHttpExceptions: true, headers: { Authorization: apiKey, accept: "application/json; charset=utf-8" }};
+    try { const response = UrlFetchApp.fetch(url, options); Ecommonkey.Wildberries.handleBalanceResponse(response);}
+    catch (error) { Logger.log('Ошибка при получении баланса: ' + error); }
+    Utilities.sleep(1000);  get_advBudget(); } else { Logger.log('Нет соединения с Wildberries');}
 }
 
 // 💵 Бюджет РК
 // Метод позволяет получать информацию о бюджете
 function get_advBudget() {
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId(); if (!credentials) return; var campaignId = credentials.campaignId;
+  const Urls = Ecommonkey.Wildberries.getlinks();const url = `${Urls.advbudget}${campaignId}`;
+  const options = { muteHttpExceptions: true, headers: { Authorization: apiKey, accept: "application/json; charset=utf-8" } };
   try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) {
-      Logger.log("get_advBudget: Кампания не выбрана, бюджет не будет обновлен.");
-      return;
-    }
+  const response = UrlFetchApp.fetch(url, options); handleBudgetResponse(response);}
+  catch (error) {Logger.log("Произошла ошибка: " + error.message);}}
 
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    const budgetData = WildberriesAPI.advert.getBudget(campaignId);
-    _updateBudgetSheet(campaignId, budgetData);
-
-  } catch (error) {
-    Logger.log(`Произошла ошибка в get_advBudget: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert("Произошла ошибка при получении бюджета: " + error.message);
+function handleBudgetResponse(response) {
+  const responseCode = response.getResponseCode();
+  const responseBody = JSON.parse(response.getContentText());
+  switch(responseCode) {
+    case 200:Ecommonkey.Wildberries.updateBudgetSheet(responseBody);break;
+    case 400:Logger.log("Ошибка 400: Неверный запрос. " + JSON.stringify(responseBody));break;
+    case 401:Logger.log("Ошибка 401: Не авторизован. " + JSON.stringify(responseBody));break;
+    default:Logger.log("Ошибка " + responseCode + ": " + JSON.stringify(responseBody));break;}
   }
 }
 
@@ -806,27 +629,30 @@ function get_advBudget() {
 // Допускается 5 запросов в секунду.
 
 function advStop() {
-  try {
-    const campaignId = _getSelectedCampaignId();
-    if (!campaignId) return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected);
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_advert';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var credentials = Ecommonkey.Wildberries.getCampaignId(); if (!credentials) return; var campaignId = credentials.campaignId;
 
-    var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Подтверждение', `Вы точно хотите завершить кампанию ID ${campaignId}?`, ui.ButtonSet.YES_NO);
-    if (response !== ui.Button.YES) {
-      return;
+    // Запрашиваем подтверждение у пользователя
+    var response = Browser.msgBox("Вы точно хотите завершить кампанию?", Browser.Buttons.YES_NO);
+    if (response === 'no') {return;}
+      const Urls = Ecommonkey.Wildberries.getlinks(); const url = `${Urls.advstop}${campaignId}`;
+      var options = {method: "get", headers: {"Authorization": apiKey}, muteHttpExceptions: true};
+      var response = UrlFetchApp.fetch(url, options);
+      Logger.log(response.getContentText());
+      console.log(JSON.stringify(response, null, 5));
+
+      switch (response.getResponseCode()) {
+        case 200:Browser.msgBox("Статус кампании изменен на Завершить");return response.getContentText(); // Успешный ответ
+        case 400:Browser.msgBox("Статус не изменен");break;
+        case 401:Browser.msgBox("Не авторизован. Пожалуйста, проверьте ваш API ключ.");break;
+        case 422:Browser.msgBox("Статус не изменен");break;
+        default:Browser.msgBox(`Ошибка ${response.getResponseCode()}: ${response.getContentText()}`);}}
+        catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    const apiKey = getAPIStatus('emonkey_advert');
-    WildberriesAPI.initialize({ advert: apiKey });
-
-    WildberriesAPI.advert.stopCampaign(campaignId);
-
-    Logger.log(`Кампания ${campaignId} успешно завершена.`);
-    ui.alert(`Кампания ${campaignId} успешно завершена.`);
-
-  } catch (error) {
-    Logger.log(`Ошибка при выполнении advStop: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при завершении кампании: ${error.message}`);
   }
 }
 
@@ -1326,33 +1152,20 @@ function get_ordersV1() {
 // 2017-03-25T00:00:00
 
 function get_incomes() {
-  try {
-    const apiKey = getAPIStatus('emonkey_statistics');
-    WildberriesAPI.initialize({ statistics: apiKey });
-
-    // Предполагается, что даты для поставок находятся в AQ38/AR38
-    const { from: dateFrom } = _getDateRangeFromSettings('AQ38', 'AR38');
-
-    const incomes = WildberriesAPI.statistics.getIncomes(dateFrom);
-
-    const sheet = _setupSheet('🚚 Поставки', [
-      'Номер поставки', 'Дата', 'Дата обновления', 'Артикул', 'Размер', 'Баркод',
-      'Кол-во', 'Общая цена', 'Дата заказа', 'Склад', 'nmID', 'Предмет', 'Категория', 'Бренд'
-    ]);
-
-    if (incomes && incomes.length > 0) {
-      const output = incomes.map(i => [
-        i.incomeId, i.date, i.lastChangeDate, i.supplierArticle, i.techSize, i.barcode,
-        i.quantity, i.totalPrice, i.dateClose, i.warehouseName, i.nmId, i.subject, i.category, i.brand
-      ]);
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} поставок.`);
-    } else {
-      Logger.log("Не найдено поставок для записи.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_incomes: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении поставок: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_statistics';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var {formattedFromDate, formattedToDate, incomeSheet} = Ecommonkey.Wildberries.initializeIncomeSheet();
+  const Urls = Ecommonkey.Wildberries.getlinks();
+  const apiUrl = `${Urls.statincomes + formattedFromDate + '&dateTo=' + formattedToDate + '&flag=0'}`;
+  var headers = {'Authorization': 'Bearer ' + apiKey};
+  var response = UrlFetchApp.fetch(apiUrl, {headers: headers, method: 'get'});
+  var responseData = JSON.parse(response.getContentText());
+  console.log(JSON.stringify(responseData, null, 5));
+  Ecommonkey.Wildberries.processIncomeData(responseData, incomeSheet);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -1423,29 +1236,20 @@ function get_card_list() {
 // Возвращает информацию о товаре по его артикулу. Чтобы получить информацию обо всех товарах, оставьте артикул пустым
 
 function get_list_goods() {
-    try {
-        const apiKey = getAPIStatus('emonkey_content');
-        WildberriesAPI.initialize({ content: apiKey });
-
-        const priceInfo = WildberriesAPI.content.getPriceInfo();
-
-        const sheet = _setupSheet('🛄 Инфо о ценах', [
-            'nmID', 'Цена', 'Скидка', 'Промо-код'
-        ]);
-
-        if (priceInfo && priceInfo.length > 0) {
-            const output = priceInfo.map(p => [
-                p.nmId, p.price, p.discount, p.promoCode
-            ]);
-            sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-            Logger.log(`Записана информация о ценах для ${output.length} товаров.`);
-        } else {
-            Logger.log("Нет информации о ценах для записи.");
-        }
-    } catch (error) {
-        Logger.log(`Ошибка в get_list_goods: ${error.message}\n${error.stack}`);
-        SpreadsheetApp.getUi().alert(`Ошибка при получении информации о ценах: ${error.message}`);
+    const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+    const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+    if (isConnected) {
+    try { const status_kvo = 'emonkey_content';
+    const apiKey = getAPIStatus(status_kvo);  Logger.log('Используемый API Key: ' + apiKey);
+    const Urls = Ecommonkey.Wildberries.getlinks(); const url = `${Urls.contlistgoods}`;
+    const list_goodsSheet = Ecommonkey.Wildberries.initializeGoodsSheet();
+    const headers = ['Артикул WB', 'Артикул продавца', 'ID размера', 'Цена', 'Цена со скидкой', 'Размер товара', 'Валюта', 'Скидка, %', 'Можно ли устанавливать цены отдельно для разных размеров'];
+    list_goodsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    Ecommonkey.Wildberries.fetchGoodsData(url, apiKey, list_goodsSheet, headers);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
+  }
 }
 
 // 🛄 Товары WB
@@ -1474,62 +1278,21 @@ function sppProductDetails() {
   }
 }
 
-/**
- * Получает список ID складов с листа '📦 Список складов'.
- * @returns {Array<number>} Массив ID складов.
- */
-function _getWarehouseIdsFromSheet() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('📦 Список складов');
-    if (!sheet) {
-        SpreadsheetApp.getUi().alert("Лист '📦 Список складов' не найден. Сначала запустите get_stock_list().");
-        return [];
-    }
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return [];
-    // Предполагается, что ID находятся в столбце A
-    return sheet.getRange(`A2:A${lastRow}`).getValues().flat().filter(id => id);
-}
-
 // 📊 Коэффициенты приёмки
 // Возвращает коэффициенты приёмки для конкретных складов на ближайшие 14 дней.
 // Максимум 6 запросов в минуту
+
 function get_coefficient() {
-  try {
-    const apiKey = getAPIStatus('emonkey_supplies');
-    WildberriesAPI.initialize({ supplies: apiKey });
-
-    const warehouseIds = _getWarehouseIdsFromSheet();
-    if (warehouseIds.length === 0) {
-      Logger.log("Не найдены ID складов для запроса коэффициентов.");
-      return;
-    }
-
-    const coefficientsData = WildberriesAPI.supplies.getWarehouseCoefficients(warehouseIds);
-
-    const sheet = _setupSheet('📊 Коэффициенты', ['Дата', 'Склад ID', 'Коэффициент приемки']);
-
-    if (coefficientsData && coefficientsData.length > 0) {
-        const output = [];
-        coefficientsData.forEach(data => {
-            if(data.warehouseCoefficients && data.warehouseCoefficients.length > 0){
-                data.warehouseCoefficients.forEach(coef => {
-                    output.push([data.date, coef.warehouseId, coef.coefficient]);
-                });
-            }
-        });
-
-        if(output.length > 0) {
-            sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-            Logger.log(`Записано ${output.length} строк коэффициентов.`);
-        } else {
-            Logger.log("Нет данных по коэффициентам для записи.");
-        }
-    } else {
-      Logger.log("Не получено данных по коэффициентам от API.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_coefficient: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении коэффициентов: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_supplies'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var coofListSheet = Ecommonkey.Wildberries.setupCoofListSheet();
+  const warehouseIDs = Ecommonkey.Wildberries.getWarehouseIDs();
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.tarrifcoof}${warehouseIDs}`;
+  Ecommonkey.Wildberries.fetchAndProcessDataCoof(apiUrl, apiKey, coofListSheet);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -1538,24 +1301,14 @@ function get_coefficient() {
 // Максимум 6 запросов в минуту
 
 function get_stock_list() {
-  try {
-    const apiKey = getAPIStatus('emonkey_supplies');
-    WildberriesAPI.initialize({ supplies: apiKey });
-
-    const warehouses = WildberriesAPI.supplies.getWarehouses();
-
-    const sheet = _setupSheet('📦 Список складов', ['ID', 'Название склада']);
-
-    if (warehouses && warehouses.length > 0) {
-      const output = warehouses.map(w => [w.id, w.name]);
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} складов в лист '📦 Список складов'.`);
-    } else {
-      Logger.log("Не найдено складов для записи.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_stock_list: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении списка складов: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_supplies'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo);  Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.tarrifstock}`;
+  Ecommonkey.Wildberries.stockListDatsProp(apiUrl, apiKey); }
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -1609,26 +1362,21 @@ function get_nmId_days() {
 // 🪧 Комиссии
 // Возвращает комиссию WB по родительским категориям товаров согласно модели продаж.
 function get_commissions() {
-  try {
-    const apiKey = getAPIStatus('emonkey_analytics');
-    WildberriesAPI.initialize({ analytics: apiKey });
-
-    const commissions = WildberriesAPI.analytics.getCommissions();
-
-    const sheet = _setupSheet('🪧 Комиссии', ['Категория', 'Предмет', 'Комиссия FBS', 'Комиссия FBO']);
-
-    if (commissions && commissions.length > 0) {
-      const output = commissions.map(c => [
-        c.category_name, c.subject_name, c.fbs, c.fbo
-      ]);
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} строк комиссий.`);
-    } else {
-      Logger.log("Не найдено комиссий для записи.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_commissions: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении комиссий: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_analytics'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks();
+  const apiUrl = `${Urls.tarrifcommiss}`;
+  var list_commissions = Ecommonkey.Wildberries.initializeCommissionsSheet();
+  var headers = {"Authorization": apiKey, "Content-Type": "application/json"};
+  var options = {"method": "get", "headers": headers, "muteHttpExceptions": true};
+  var response = UrlFetchApp.fetch(apiUrl, options);
+  if (response.getResponseCode() !== 200) {Logger.log("Ошибка при получении данных: " + response.getContentText()); return;}
+  var data = JSON.parse(response.getContentText()); Logger.log(JSON.stringify(data, null, 5));
+  Ecommonkey.Wildberries.writeCommissionsToSheet(list_commissions, data);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -1639,30 +1387,27 @@ function get_commissions() {
 // хранения на складе Wildberries.
 
 function get_tariffsbox() {
-    try {
-        const apiKey = getAPIStatus('emonkey_analytics');
-        WildberriesAPI.initialize({ analytics: apiKey });
+    const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+    const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+    if (isConnected) {
+    try { var status_kvo = 'emonkey_analytics'; // Здесь можно менять статус
+    var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+    var { sDatePeriod_1, sDatePeriod_2, list_tarrifs } = Ecommonkey.Wildberries.initializeTariffsSheet();
 
-        // Предполагается, что дата для тарифов находится в ячейке AQ39
-        const { from: date } = _getDateRangeFromSettings('AQ39', 'AQ39');
+    Logger.log('sDatePeriod_1: ' + sDatePeriod_1);
+    Logger.log('sDatePeriod_2: ' + sDatePeriod_2);
 
-        const tariffs = WildberriesAPI.analytics.getBoxTariffs(date);
-
-        const sheet = _setupSheet('📦 Тарифы короба', ['Склад', 'Доставка (короб)', 'Хранение (короб)']);
-
-        if (tariffs && tariffs.length > 0) {
-            const output = tariffs.map(t => [
-                t.warehouse, t.deliveryKgt, t.storageKgt
-            ]);
-            sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-            Logger.log(`Записано ${output.length} тарифов для коробов.`);
-        } else {
-            Logger.log("Не найдено тарифов для коробов.");
-        }
-    } catch (error) {
-        Logger.log(`Ошибка в get_tariffsbox: ${error.message}\n${error.stack}`);
-        SpreadsheetApp.getUi().alert(`Ошибка при получении тарифов для коробов: ${error.message}`);
+    const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.tarrifbox + sDatePeriod_1}`;
+    var headers = {"Authorization": apiKey, "Content-Type": "application/json"};
+    var options = {"method": "get", "headers": headers, "muteHttpExceptions": true};
+    var response = UrlFetchApp.fetch(apiUrl, options);if (response.getResponseCode() !== 200) {
+    Logger.log("Ошибка при получении данных: " + response.getContentText());return;}
+    var data = JSON.parse(response.getContentText()).response.data; Logger.log(JSON.stringify(data, null, 5));
+    Ecommonkey.Wildberries.processTariffData(data, list_tarrifs);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
+  }
 }
 
 // 📦 Тарифы паллеты - Тарифы для монопаллет / Максимум — 60 запросов в минуту.
@@ -1672,61 +1417,63 @@ function get_tariffsbox() {
 // хранения на складе Wildberries.
 
 function get_tariffpallet() {
-  try {
-    const apiKey = getAPIStatus('emonkey_analytics');
-    WildberriesAPI.initialize({ analytics: apiKey });
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_analytics'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var { sDatePeriod_1, list_tarrifs } = Ecommonkey.Wildberries.initializeSheetAndDates();
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = `${Urls.tarrifpallet + sDatePeriod_1}`;
 
-    // Предполагается, что дата для тарифов находится в ячейке AQ40
-    const { from: date } = _getDateRangeFromSettings('AQ40', 'AQ40');
-
-    const tariffs = WildberriesAPI.analytics.getPalletTariffs(date);
-
-    const sheet = _setupSheet('📦 Тарифы паллеты', [
-        'Склад', 'Доставка (паллета)', 'Хранение (паллета)'
-    ]);
-
-    if (tariffs && tariffs.length > 0) {
-        const output = tariffs.map(t => [
-            t.warehouse, t.delivery, t.storage
-        ]);
-        sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-        Logger.log(`Записано ${output.length} тарифов для паллет.`);
-    } else {
-        Logger.log("Не найдено тарифов для паллет.");
+    var headersArray = [
+      'Дата начала следующего тарифа',
+      'Дата окончания последнего установленного тарифа',
+      'Название склада',
+      'Коэффициент доставки, %',
+      'Доставка 1 литра, ₽',
+      'Доставка каждого дополнительного литра, ₽',
+      'Коэффициент хранения, %',
+      'Хранение 1 монопаллеты, ₽'];
+    Ecommonkey.Wildberries.setHeadersPall(list_tarrifs, headersArray);
+    var headers = { "Authorization": apiKey, "Content-Type": "application/json" };
+    var options = {"method": "get","headers": headers,"muteHttpExceptions": true};
+    var response = UrlFetchApp.fetch(apiUrl, options);
+    Logger.log(JSON.stringify(response, null, 5));
+    if (response.getResponseCode() !== 200) {Logger.log("Ошибка при получении данных: " + response.getContentText());return;}
+    var data = JSON.parse(response.getContentText()).response.data;
+    Ecommonkey.Wildberries.processWarehouseDataPall(data, list_tarrifs, headersArray);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-  } catch (error) {
-    Logger.log(`Ошибка в get_tariffpallet: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении тарифов для паллет: ${error.message}`);
   }
 }
 
 // 📦 Тарифы возвраты / Тарифы на возврат / Максимум — 60 запросов в минуту.
+// Возвращает тарифы:
+// на перевозку товаров со склада Wildberries или из пункта приёма до продавца
+// на обратную перевозку возвратов, которые не забрал продавец
+
 function get_tariffreturn() {
-  try {
-    const apiKey = getAPIStatus('emonkey_analytics');
-    WildberriesAPI.initialize({ analytics: apiKey });
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_analytics'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo);Logger.log('Используемый API Key: ' + apiKey);
+  var { sDatePeriod, list } = Ecommonkey.Wildberries.initializeTariffRetSheet();
 
-    // Предполагается, что дата для тарифов находится в ячейке AQ41
-    const { from: date } = _getDateRangeFromSettings('AQ41', 'AQ41');
-
-    const tariffs = WildberriesAPI.analytics.getReturnTariffs(date);
-
-    const sheet = _setupSheet('📦 Тарифы возвраты', [
-        'Склад', 'Доставка (возврат)', 'Хранение (возврат)'
-    ]);
-
-    if (tariffs && tariffs.length > 0) {
-        const output = tariffs.map(t => [
-            t.warehouse, t.delivery, t.storage
-        ]);
-        sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-        Logger.log(`Записано ${output.length} тарифов на возвраты.`);
-    } else {
-        Logger.log("Не найдено тарифов на возвраты.");
+    var headers = { "Authorization": apiKey, "Content-Type": "application/json" };
+    var options = { "method": "get", "headers": headers, "muteHttpExceptions": true };
+    const Urls = Ecommonkey.Wildberries.getlinks();
+    const apiUrl = `${Urls.tarrifreturn + '?date=' + sDatePeriod}`;
+    var response = UrlFetchApp.fetch(apiUrl, options);
+    Logger.log(JSON.stringify(response, null, 5));
+    if (response.getResponseCode() !== 200) {Logger.log("Ошибка при получении данных: " + response.getContentText());return;}
+    var data = JSON.parse(response.getContentText()).response.data;
+    if (data.warehouseList && data.warehouseList.length > 0) {
+    Ecommonkey.Wildberries.processWarehouseData(data, list);} else {Logger.log("Нет данных для записи.");}}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-  } catch (error) {
-    Logger.log(`Ошибка в get_tariffreturn: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении тарифов на возвраты: ${error.message}`);
   }
 }
 
@@ -1734,24 +1481,15 @@ function get_tariffreturn() {
 // Метод позволяет получить количество необработанных отзывов за сегодня, за всё время, и среднюю оценку всех отзывов.
 
 function unanswered_feedbacks() {
-  try {
-    const apiKey = getAPIStatus('emonkey_feedbacks');
-    WildberriesAPI.initialize({ feedbacks: apiKey });
-
-    const data = WildberriesAPI.feedbacks.getUnansweredCount();
-
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('📢 Отзывы'); // Assumption
-    if (sheet) {
-      // Assuming the count is written to a specific cell, e.g., B1, with a label in A1.
-      sheet.getRange('A1').setValue('Необработанных отзывов:');
-      sheet.getRange('B1').setValue(data.count);
-      Logger.log(`Количество необработанных отзывов: ${data.count}`);
-    } else {
-      Logger.log("Лист '📢 Отзывы' не найден для записи количества.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в unanswered_feedbacks: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении количества отзывов: ${error.message}`);
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_feedbacks'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = Urls.feedbackscount;
+  var unanswered_feedbacks = Ecommonkey.Wildberries.setupUnansweredFeedbackSheet();
+  Ecommonkey.Wildberries.fetchFeedbackDataUnAnswer(apiUrl, apiKey, unanswered_feedbacks);}
+  catch (error) {Logger.log('Ошибка при выполнении: ' + error); SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);}
   }
 }
 
@@ -1766,63 +1504,59 @@ function startFeedbacks() {
 }
 
 function feedbacks(isAnsweredInput) {
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  var status_kvo = 'emonkey_feedbacks';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var isAnswered = (isAnsweredInput === 'true');
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = Urls.feedbacksall;
+  var { feedbacksheet, dateFrom, dateTo } = Ecommonkey.Wildberries.feedbackSheetlisting();
+
+  const headersArray = ['ID', 'Текст', 'Рейтинг', 'Дата', 'Отвечен', 'Статус отзыва', 'Достоинства товара', 'Недостатки товара', 'Артикул WB', 'ШВ карточки товара', 'Название товара', 'Артикул продавца', 'Имя продавца', 'Бренд товара', 'Размер товара', 'Имя автора отзыва', 'Соответствие заявленного размера реальному', 'Штрихкод товара', 'Название предмета', 'Просмотрен ли отзыв', 'Фото'];
+
+  let allRows = [];
+  var params = {
+    isAnswered: isAnswered,
+    nmId: '',
+    take: 5000,
+    skip: 0,
+    order: 'dateDesc',
+    dateFrom: dateFrom,
+    dateTo: dateTo};
+
+  var queryString = Object.keys(params)
+    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+    .join('&');
+
+  const fullUrl = apiUrl + '?' + queryString;
+  var headers = { "Authorization": apiKey, "Content-Type": "application/json" };
+  var options = { "method": "get", "headers": headers, "muteHttpExceptions": true };
+
   try {
-    const isAnswered = (isAnsweredInput === 'true');
-    const apiKey = getAPIStatus('emonkey_feedbacks');
-    WildberriesAPI.initialize({ feedbacks: apiKey });
+    var response = UrlFetchApp.fetch(fullUrl, options);
+    const jsonResponse = JSON.parse(response.getContentText());
+    console.log(JSON.stringify(jsonResponse, null, 5));
 
-    // Предполагается, что даты для отзывов находятся в AQ36/AR36
-    const { from: dateFrom, to: dateTo } = _getDateRangeFromSettings('AQ36', 'AR36');
+    if (jsonResponse.data && jsonResponse.data.feedbacks) {
+      jsonResponse.data.feedbacks.forEach(feedback => {
+        var row = Ecommonkey.Wildberries.createFeedbackRow(feedback);
+        allRows.push(row);});}
+  } catch (error) {console.error(`Ошибка при получении отзывов: ${error.message}`);}
 
-    const sheetName = '📢 Отзывы';
-    const headers = [
-      'ID', 'Автор', 'Текст', 'Оценка', 'Дата', 'Статус', 'Отвечен',
-      'Артикул WB', 'Название товара', 'Артикул поставщика', 'Бренд', 'Размер', 'Просмотрен', 'Фото'
-    ];
-    const sheet = _setupSheet(sheetName, headers);
-
-    // take=5000, skip=0, order='dateDesc'
-    const feedbacksData = WildberriesAPI.feedbacks.getFeedbacks(isAnswered, dateFrom, dateTo, 5000, 0, 'dateDesc');
-
-    if (feedbacksData && feedbacksData.length > 0) {
-      const output = feedbacksData.map(f => {
-        const photoLinks = (f.photoLinks || []).map(p => `=IMAGE("${p.fullSize}")`).join(' ');
-        return [
-          f.id,
-          f.userName,
-          f.text,
-          f.productValuation,
-          new Date(f.createdDate).toLocaleString(),
-          f.state,
-          f.answer ? 'Да' : 'Нет',
-          f.productDetails ? f.productDetails.nmId : '',
-          f.productDetails ? f.productDetails.productName : '',
-          f.productDetails ? f.productDetails.supplierArticle : '',
-          f.productDetails ? f.productDetails.brandName : '',
-          f.size,
-          f.wasViewed ? 'Да' : 'Нет',
-          photoLinks
-        ];
-      });
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} отзывов в '${sheetName}'.`);
-    } else {
-      Logger.log("Нет отзывов для записи.");
+  if (allRows.length > 0) {
+    feedbacksheet.getRange(2, 1, allRows.length, headersArray.length).setValues(allRows);
+    feedbacksheet.getRange(1, 1, 1, headersArray.length).setValues([headersArray]);}
+  try {
+  Ecommonkey.Wildberries.setFeedbackFormulas(feedbacksheet);
+  Ecommonkey.Wildberries.disableCheckboxes(); Utilities.sleep(2000);
+  Ecommonkey.Wildberries.checkStopPhrases(); Utilities.sleep(2000);
+  Ecommonkey.Wildberries.updateUniqueReviews(); Utilities.sleep(2000);
+  Ecommonkey.Wildberries.delete_empty_columns_feedBack();
+ }
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    // Post-processing sheet manipulation logic is kept from the original
-    Ecommonkey.Wildberries.setFeedbackFormulas(sheet);
-    Ecommonkey.Wildberries.disableCheckboxes();
-    Utilities.sleep(2000);
-    Ecommonkey.Wildberries.checkStopPhrases();
-    Utilities.sleep(2000);
-    Ecommonkey.Wildberries.updateUniqueReviews();
-    Utilities.sleep(2000);
-    Ecommonkey.Wildberries.delete_empty_columns_feedBack();
-
-  } catch (error) {
-    Logger.log(`Ошибка в feedbacks: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении отзывов: ${error.message}`);
   }
 }
 
@@ -1830,58 +1564,60 @@ function feedbacks(isAnsweredInput) {
 // Метод позволяет получить список отзывов по заданным параметрам с пагинацией и сортировкой.
 
 function feedbacks_all() {
-  try {
-    const apiKey = getAPIStatus('emonkey_feedbacks');
-    WildberriesAPI.initialize({ feedbacks: apiKey });
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  var status_kvo = 'emonkey_feedbacks'; // Здесь можно менять статус
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  var { feedbacksheet, dateFrom, dateTo } = Ecommonkey.Wildberries.initializeFeedbackSheetAll();
 
-    // Предполагается, что даты для отзывов находятся в AQ36/AR36
-    const { from: dateFrom, to: dateTo } = _getDateRangeFromSettings('AQ36', 'AR36');
+  const Urls = Ecommonkey.Wildberries.getlinks(); const apiUrl = Urls.feedbacksall;
+  const headersArray = ['ID', 'Текст', 'Рейтинг', 'Дата', 'Отвечен', 'Статус отзыва', 'Достоинства товара', 'Недостатки товара', 'Артикул WB', 'ШВ карточки товара', 'Название товара', 'Артикул продавца', 'Имя продавца', 'Бренд товара', 'Размер товара', 'Имя автора отзыва', 'Соответствие заявленного размера реальному','Штрихкод товара','Название предмета','Просмотрен ли отзыв', 'Фото'];
 
-    const sheetName = '📢 Отзывы (все)';
-    const headers = [
-      'ID', 'Автор', 'Текст', 'Оценка', 'Дата', 'Статус', 'Отвечен',
-      'Артикул WB', 'Название товара', 'Артикул поставщика', 'Бренд', 'Размер', 'Просмотрен', 'Фото'
-    ];
-    const sheet = _setupSheet(sheetName, headers);
+  var allRows = [];
 
-    // Fetch both unanswered and answered feedbacks
-    const unanswered = WildberriesAPI.feedbacks.getFeedbacks(false, dateFrom, toDate, 5000, 0, 'dateDesc');
-    Utilities.sleep(1000); // Pause between requests to avoid rate limiting
-    const answered = WildberriesAPI.feedbacks.getFeedbacks(true, dateFrom, toDate, 5000, 0, 'dateDesc');
+  function fetchFeedbacks(isAnswered) {
+    var params = { isAnswered: isAnswered, nmId: '', take: 5000, skip: 0, order: 'dateDesc', dateFrom: dateFrom, dateTo: dateTo };
+    var queryString = Object.keys(params)
+      .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+      .join('&');
+    const fullUrl = apiUrl + '?' + queryString;
 
-    const allFeedbacks = [...unanswered, ...answered];
-    allFeedbacks.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate)); // Sort by date descending
+      var headers = { "Authorization": apiKey, "Content-Type": "application/json" };
+      var options = { "method": "get", "headers": headers, "muteHttpExceptions": true };
 
-    if (allFeedbacks.length > 0) {
-      const output = allFeedbacks.map(f => {
-        const photoLinks = (f.photoLinks || []).map(p => `=IMAGE("${p.fullSize}")`).join(' ');
-        return [
-          f.id, f.userName, f.text, f.productValuation, new Date(f.createdDate).toLocaleString(),
-          f.state, f.answer ? 'Да' : 'Нет',
-          f.productDetails ? f.productDetails.nmId : '',
-          f.productDetails ? f.productDetails.productName : '',
-          f.productDetails ? f.productDetails.supplierArticle : '',
-          f.productDetails ? f.productDetails.brandName : '',
-          f.size,
-          f.wasViewed ? 'Да' : 'Нет',
-          photoLinks
-        ];
-      });
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} отзывов в '${sheetName}'.`);
-    } else {
-      Logger.log("Нет отзывов для записи.");
+      try {
+        var response = UrlFetchApp.fetch(fullUrl, options);
+        const jsonResponse = JSON.parse(response.getContentText());
+        console.log(JSON.stringify(jsonResponse, null, 5));
+
+        if (jsonResponse.data && jsonResponse.data.feedbacks) {
+          jsonResponse.data.feedbacks.forEach(feedback => {
+            var row = Ecommonkey.Wildberries.createFeedbackRowAll(feedback); allRows.push(row);});
+        }
+      } catch (error) {console.error(`Ошибка при получении отзывов: ${error.message}`);}
+
+  }
+try {
+  fetchFeedbacks('false');
+  Utilities.sleep(1000);
+  fetchFeedbacks('true');
+
+  if (allRows.length > 0) {
+    feedbacksheet.getRange(2, 1, allRows.length, headersArray.length).setValues(allRows);
+    feedbacksheet.getRange(1, 1, 1, headersArray.length).setValues([headersArray]);
+
+
+    // Задержка перед запуском следующей функции
+    Utilities.sleep(5000); Ecommonkey.Wildberries.disableCheckboxes(); // Отключаем чекбоксы
+    Utilities.sleep(5000); Ecommonkey.Wildberries.checkStopPhrases(); // Определяем стоп фразы
+    Utilities.sleep(5000); Ecommonkey.Wildberries.updateUniqueReviews(); // Обновляем 🧑‍💻 Ответы на отзывы
+    Utilities.sleep(1000); Ecommonkey.Wildberries.delete_empty_columns_feedBack_all(); // Удаляем пустые строки
+  }
+}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    // Post-processing sheet manipulation logic is kept from the original
-    Utilities.sleep(5000); Ecommonkey.Wildberries.disableCheckboxes();
-    Utilities.sleep(5000); Ecommonkey.Wildberries.checkStopPhrases();
-    Utilities.sleep(5000); Ecommonkey.Wildberries.updateUniqueReviews();
-    Utilities.sleep(1000); Ecommonkey.Wildberries.delete_empty_columns_feedBack_all();
-
-  } catch (error) {
-    Logger.log(`Ошибка в feedbacks_all: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении всех отзывов: ${error.message}`);
   }
 }
 
@@ -1892,61 +1628,24 @@ function feedbacks_all() {
 // Оценить отзыв и/или товар.
 // Отредактировать ответ на отзыв можно в течение 2 месяцев (60 дней), после предоставления ответа и только 1 раз.
 
-/**
- * Собирает отзывы, отмеченные для ответа, с листа '🧑‍💻 Ответы на отзывы'.
- * @returns {Array<{id: string, text: string}>} Массив объектов отзывов для ответа.
- */
-function _getFeedbacksToAnswer() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('🧑‍💻 Ответы на отзывы');
-    if (!sheet) {
-        SpreadsheetApp.getUi().alert("Лист '🧑‍💻 Ответы на отзывы' не найден.");
-        return [];
-    }
-    const data = sheet.getRange("A2:C" + sheet.getLastRow()).getValues();
-    const feedbacks = [];
-    for (const row of data) {
-        // Предполагается: чекбокс в A, ID отзыва в B, текст ответа в C
-        if (row[0] === true && row[1] && row[2]) {
-            feedbacks.push({ id: row[1], text: row[2] });
-        }
-    }
-    return feedbacks;
-}
-
 function feedbacks_patch() {
-  try {
-    const apiKey = getAPIStatus('emonkey_feedbacks');
-    WildberriesAPI.initialize({ feedbacks: apiKey });
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try { var status_kvo = 'emonkey_feedbacks'; // Здесь можно менять статус
+  const Urls = Ecommonkey.Wildberries.getlinks();
+  const apiUrl = Urls.feedbackspatch;
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
 
-    const feedbacksToAnswer = _getFeedbacksToAnswer();
-    if (feedbacksToAnswer.length === 0) {
-      Logger.log("Нет отзывов, отмеченных для ответа.");
-      SpreadsheetApp.getUi().alert("Не выбрано ни одного отзыва для отправки.");
-      return;
+    var feedbackData = Ecommonkey.Wildberries.getFeedbackData();
+    var feedbackIds = feedbackData.ids;
+    var responseTextsMatrix = feedbackData.texts;
+
+    // Вызов функции для обработки отзывов
+    Ecommonkey.Wildberries.processFeedbacks(feedbackIds, responseTextsMatrix, apiUrl, apiKey);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    let successCount = 0;
-    let errorCount = 0;
-
-    feedbacksToAnswer.forEach(feedback => {
-      try {
-        // API allows batching, but for clarity and rate-limiting, we do it one by one.
-        WildberriesAPI.feedbacks.answer(feedback.id, feedback.text);
-        Logger.log(`Успешно отправлен ответ на отзыв ID: ${feedback.id}`);
-        successCount++;
-      } catch (e) {
-        Logger.log(`Ошибка при ответе на отзыв ID: ${feedback.id}. Ошибка: ${e.message}`);
-        errorCount++;
-      }
-      // Wildberries API for feedbacks has a rate limit of 1 request per second.
-      Utilities.sleep(1100);
-    });
-
-    SpreadsheetApp.getUi().alert(`Отправка ответов завершена.\nУспешно: ${successCount}\nС ошибками: ${errorCount}`);
-
-  } catch (error) {
-    Logger.log(`Ошибка в feedbacks_patch: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при отправке ответов на отзывы: ${error.message}`);
   }
 }
 
@@ -2017,131 +1716,63 @@ function search_words() {
 // Максимум 10 запросов за 6 секунд для всех методов Календаря акций на один аккаунт продавца
 
 function get_promoList() {
-  try {
-    const apiKey = getAPIStatus('emonkey_statistics');
-    WildberriesAPI.initialize({ statistics: apiKey });
-
-    // Предполагается, что даты для акций находятся в AQ37/AR37
-    const { from: startDate, to: endDate } = _getDateRangeFromSettings('AQ37', 'AR37');
-
-    const startDateTime = `${startDate}T00:00:00Z`;
-    const endDateTime = `${endDate}T23:59:59Z`;
-
-    const promos = WildberriesAPI.statistics.getPromotions(startDateTime, endDateTime);
-
-    const sheet = _setupSheet('📕 Список акций', ['ID', 'Название', 'Дата начала', 'Дата окончания', 'Тип']);
-
-    if (promos && promos.length > 0) {
-      const output = promos.map(p => [
-        p.promoID,
-        p.promoName,
-        new Date(p.startDateTime).toLocaleString(),
-        new Date(p.endDateTime).toLocaleString(),
-        p.promoType
-      ]);
-      sheet.getRange(2, 1, output.length, output[0].length).setValues(output);
-      Logger.log(`Записано ${output.length} акций.`);
-    } else {
-      Logger.log("Не найдено акций для записи.");
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_statistics';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const Urls = Ecommonkey.Wildberries.getlinks();
+  const { formattedStartDateTime, formattedEndDateTime } = Ecommonkey.Wildberries.getFormattedDateTimesParaPromo();
+  const url = `${Urls.promoCalendar}?startDateTime=${formattedStartDateTime}&endDateTime=${formattedEndDateTime}&allPromo=false&limit=10&offset=0`;
+  var options = {method: "get", headers: {"Authorization": apiKey}, muteHttpExceptions: true};
+  var response = UrlFetchApp.fetch(url, options); Logger.log(response.getContentText());
+  var jsonResponse = JSON.parse(response.getContentText());
+  if (jsonResponse.data && jsonResponse.data.promotions) {Ecommonkey.Wildberries.writePromotionsToSheet(jsonResponse.data.promotions);}
+  else {Logger.log("Нет акций для отображения.");}}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-  } catch (error) {
-    Logger.log(`Ошибка в get_promoList: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении списка акций: ${error.message}`);
   }
 }
 
-/**
- * Получает список ID акций с листа '📕 Список акций'.
- * @returns {Array<number>} Массив ID акций.
- */
-function _getPromoIdsFromSheet() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('📕 Список акций');
-    if (!sheet) {
-        SpreadsheetApp.getUi().alert("Лист '📕 Список акций' не найден. Сначала запустите get_promoList().");
-        return [];
-    }
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return [];
-    // Предполагается, что ID находятся в столбце A
-    return sheet.getRange(`A2:A${lastRow}`).getValues().flat().filter(id => id);
-}
-
 // 📕 Список товаров для участия в акции
+// Возвращает список товаров, подходящих для участия в акции. Неприменимо для автоакций
+// Максимум 10 запросов за 6 секунд для всех методов Календаря акций на один аккаунт продавца
+
 function get_promoArt() {
-  try {
-    const apiKey = getAPIStatus('emonkey_statistics');
-    WildberriesAPI.initialize({ statistics: apiKey });
-
-    const promoIds = _getPromoIdsFromSheet();
-    if (promoIds.length === 0) {
-      Logger.log("Не найдены ID акций для запроса артикулов.");
-      return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_statistics';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const promotionsSheet = ss.getSheetByName('📕 Список акций');
+  const productsSheet = ss.getSheetByName('📕 Список товаров');
+  const promotionsIDs = promotionsSheet.getRange("A2:A").getValues();
+  Ecommonkey.Wildberries.processPromotions(promotionsIDs, productsSheet, apiKey);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    const sheet = _setupSheet('📕 Список товаров', ['ID Акции', 'Артикул WB', 'Артикул поставщика', 'Бренд']);
-    let allOutput = [];
-
-    promoIds.forEach(promoId => {
-      try {
-        const articles = WildberriesAPI.statistics.getPromotionArticles(promoId);
-        if (articles && articles.length > 0) {
-          const output = articles.map(a => [promoId, a.nmId, a.vendorCode, a.brand]);
-          allOutput = allOutput.concat(output);
-        }
-      } catch (e) {
-        Logger.log(`Не удалось получить артикулы для акции ID ${promoId}: ${e.message}`);
-      }
-      Utilities.sleep(200); // Rate limiting
-    });
-
-    if (allOutput.length > 0) {
-      sheet.getRange(2, 1, allOutput.length, allOutput[0].length).setValues(allOutput);
-      Logger.log(`Записано ${allOutput.length} товаров для участия в акциях.`);
-    } else {
-      Logger.log("Не найдено товаров для акций.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_promoArt: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении товаров для акций: ${error.message}`);
   }
 }
 
 // 📕 Детальная информация по акциям
+// Возвращает подробную информацию о выбранных акциях
+// Максимум 10 запросов за 6 секунд для всех методов Календаря акций на один аккаунт продавца
+
 function get_promoInfo() {
-  try {
-    const apiKey = getAPIStatus('emonkey_statistics');
-    WildberriesAPI.initialize({ statistics: apiKey });
-
-    const promoIds = _getPromoIdsFromSheet();
-    if (promoIds.length === 0) {
-      Logger.log("Не найдены ID акций для запроса информации.");
-      return;
+  const ids = SpreadsheetApp.getActiveSpreadsheet().getId(); const seePro = Ecommonkey.Wildberries.isConnected();
+  const isConnected = seePro.includes(ids); Ecommonkey.Wildberries.checkConnection(isConnected); // Проверяем соединение
+  if (isConnected) {
+  try {var status_kvo = 'emonkey_statistics';
+  var apiKey = getAPIStatus(status_kvo); Logger.log('Используемый API Key: ' + apiKey);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const promotionsSheet = ss.getSheetByName('📕 Список акций');
+  const promotionsIDs = promotionsSheet.getRange("A2:A").getValues();   // Получаем массив ID акций
+  Ecommonkey.Wildberries.fetchPromotionsData(promotionsIDs, apiKey);}
+    catch (error) {Logger.log('Ошибка при выполнении: ' + error);
+    SpreadsheetApp.getUi().alert('Ошибка при получении данных: ' + error.message);
     }
-
-    const sheet = _setupSheet('📕 Инфо по акциям', ['ID Акции', 'Название', 'Описание', 'Условия участия']);
-    let allOutput = [];
-
-    promoIds.forEach(promoId => {
-      try {
-        const info = WildberriesAPI.statistics.getPromotionInfo(promoId);
-        if (info) {
-          allOutput.push([promoId, info.promoName, info.description, info.conditions]);
-        }
-      } catch (e) {
-        Logger.log(`Не удалось получить информацию для акции ID ${promoId}: ${e.message}`);
-      }
-      Utilities.sleep(200); // Rate limiting
-    });
-
-    if (allOutput.length > 0) {
-      sheet.getRange(2, 1, allOutput.length, allOutput[0].length).setValues(allOutput);
-      Logger.log(`Записана информация по ${allOutput.length} акциям.`);
-    } else {
-      Logger.log("Не найдено информации по акциям.");
-    }
-  } catch (error) {
-    Logger.log(`Ошибка в get_promoInfo: ${error.message}\n${error.stack}`);
-    SpreadsheetApp.getUi().alert(`Ошибка при получении информации по акциям: ${error.message}`);
   }
 }
 
