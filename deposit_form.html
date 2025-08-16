@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    Сумма пополнения: <input type="number" id="sum" max="5000" /><br/>
+    Тип пополнения:
+    <select id="type">
+      <option value="0">С баланса</option>
+      <option value="1">С карты</option>
+      <option value="3">С бонусов</option>
+    </select>
+    <br/><br/>
+    <button onclick="submitForm()">Пополнить</button>
+    <script>
+      function submitForm() {
+        const sum = document.getElementById('sum').value;
+        const type = document.getElementById('type').value;
+
+        // Проверка на максимальное значение перед отправкой
+        if (sum > 5000) {
+          alert("Максимально допустимая сумма пополнения — 5000.");
+          return;
+        }
+
+        google.script.run.withSuccessHandler(function() {
+          google.script.host.close();
+        }).post_advDeposit(sum, type);
+      }
+    </script>
+  </body>
+</html>
